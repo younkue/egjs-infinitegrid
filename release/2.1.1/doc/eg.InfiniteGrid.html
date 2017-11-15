@@ -98,15 +98,19 @@
     
         <li data-name="eg.InfiniteGrid#destroy"><a href="eg.InfiniteGrid.html#destroy">destroy</a></li>
     
+        <li data-name="eg.InfiniteGrid#getBottomElement"><a href="eg.InfiniteGrid.html#getBottomElement">getBottomElement</a></li>
+    
         <li data-name="eg.InfiniteGrid#getGroupKeys"><a href="eg.InfiniteGrid.html#getGroupKeys">getGroupKeys</a></li>
     
-        <li data-name="eg.InfiniteGrid#getItems"><a href="eg.InfiniteGrid.html#getItems">getItems</a></li>
-    
         <li data-name="eg.InfiniteGrid#getStatus"><a href="eg.InfiniteGrid.html#getStatus">getStatus</a></li>
+    
+        <li data-name="eg.InfiniteGrid#getTopElement"><a href="eg.InfiniteGrid.html#getTopElement">getTopElement</a></li>
     
         <li data-name="eg.InfiniteGrid#hasOn"><a href="eg.InfiniteGrid.html#hasOn">hasOn</a> <img src="img/i.png" width="14" title="inherited" alt="inherited"></li>
     
         <li data-name="eg.InfiniteGrid#isProcessing"><a href="eg.InfiniteGrid.html#isProcessing">isProcessing</a></li>
+    
+        <li data-name="eg.InfiniteGrid#isRecycling"><a href="eg.InfiniteGrid.html#isRecycling">isRecycling</a></li>
     
         <li data-name="eg.InfiniteGrid#layout"><a href="eg.InfiniteGrid.html#layout">layout</a></li>
     
@@ -120,8 +124,6 @@
     
         <li data-name="eg.InfiniteGrid#remove"><a href="eg.InfiniteGrid.html#remove">remove</a></li>
     
-        <li data-name="eg.InfiniteGrid#setLayout"><a href="eg.InfiniteGrid.html#setLayout">setLayout</a></li>
-    
         <li data-name="eg.InfiniteGrid#setStatus"><a href="eg.InfiniteGrid.html#setStatus">setStatus</a></li>
     
         <li data-name="eg.InfiniteGrid#trigger"><a href="eg.InfiniteGrid.html#trigger">trigger</a> <img src="img/i.png" width="14" title="inherited" alt="inherited"></li>
@@ -133,45 +135,9 @@
     
         <li data-name="eg.InfiniteGrid#event:append"><a href="eg.InfiniteGrid.html#event:append">append</a></li>
     
-        <li data-name="eg.InfiniteGrid#event:change"><a href="eg.InfiniteGrid.html#event:change">change</a></li>
-    
         <li data-name="eg.InfiniteGrid#event:layoutComplete"><a href="eg.InfiniteGrid.html#event:layoutComplete">layoutComplete</a></li>
     
         <li data-name="eg.InfiniteGrid#event:prepend"><a href="eg.InfiniteGrid.html#event:prepend">prepend</a></li>
-    
-    </ul>
-
-    
-</li>
-
-        
-            
-
-<li class="item" data-name="eg.InfiniteGrid.GridLayout">
-    <span class="title">
-        <a href="eg.InfiniteGrid.GridLayout.html">eg.InfiniteGrid.GridLayout</a>
-        
-    </span>
-    <ul class="members itemMembers expends">
-    
-    </ul>
-    <ul class="typedefs itemMembers expends">
-    
-    </ul>
-    <ul class="methods itemMembers expends">
-    
-    <span class="subtitle">Methods</span>
-    
-        <li data-name="eg.InfiniteGrid.GridLayout#append"><a href="eg.InfiniteGrid.GridLayout.html#append">append</a></li>
-    
-        <li data-name="eg.InfiniteGrid.GridLayout#layout"><a href="eg.InfiniteGrid.GridLayout.html#layout">layout</a></li>
-    
-        <li data-name="eg.InfiniteGrid.GridLayout#prepend"><a href="eg.InfiniteGrid.GridLayout.html#prepend">prepend</a></li>
-    
-        <li data-name="eg.InfiniteGrid.GridLayout#setSize"><a href="eg.InfiniteGrid.GridLayout.html#setSize">setSize</a></li>
-    
-    </ul>
-    <ul class="events itemMembers expends">
     
     </ul>
 
@@ -194,7 +160,7 @@
 <header>
     <h2>
     
-        <span></span>
+        <span>eg.InfiniteGrid</span>
         
     </h2>
     <button id="toggle">
@@ -219,7 +185,7 @@
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line82">line 82</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line67">line 67</a>
         </div>
         
     </div>
@@ -230,12 +196,12 @@
     
     
 	<div class="description en">
-		<p>A module used to arrange card elements including content infinitely according to layout type. With this module, you can implement various layouts composed of different card elements whose sizes vary. It guarantees performance by maintaining the number of DOMs the module is handling under any circumstance</p>
+		<p>A module used to arrange card elements including content infinitely on a grid layout. With this module, you can implement a grid-pattern user interface composed of different card elements whose sizes vary. It guarantees performance by maintaining the number of DOMs the module is handling under any circumstance</p>
 	</div>
 	
 	
 	<div class="description ko">
-		<p>콘텐츠가 있는 카드 엘리먼트를 레이아웃 타입에 따라 무한으로 배치하는 모듈. 다양한 크기의 카드 엘리먼트를 다양한 레이아웃으로 배치할 수 있다. 카드 엘리먼트의 개수가 계속 늘어나도 모듈이 처리하는 DOM의 개수를 일정하게 유지해 최적의 성능을 보장한다</p>
+		<p>콘텐츠가 있는 카드 엘리먼트를 그리드 레이아웃에 무한으로 배치하는 모듈. 다양한 크기의 카드 엘리먼트를 격자 모양으로 배치하는 UI를 만들 수 있다. 카드 엘리먼트의 개수가 계속 늘어나도 모듈이 처리하는 DOM의 개수를 일정하게 유지해 최적의 성능을 보장한다</p>
 	</div>
 	
 
@@ -362,9 +328,9 @@
     <li>
         <!-- parameter name -->
         <div>
-            <strong>useRecycle</strong>
+            <strong>count</strong>
             
-                (default: <code>true</code>)
+                (default: <code>30</code>)
             
 
             
@@ -379,7 +345,7 @@
         <!-- parameter type -->
         
         <div>Type: 
-<span class="param-type">Boolean</span>
+<span class="param-type">Number</span>
 
 </div>
         
@@ -387,8 +353,8 @@
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>Indicates whether keep the number of DOMs is maintained. If the useRecycle value is 'true', keep the number of DOMs is maintained. If the useRecycle value is 'false', the number of DOMs will increase as card elements are added. </p></div>
-            <div class="description ko"><p>DOM의 수를 유지할지 여부를 나타낸다. useRecycle 값이 'true'이면 DOM 개수를 일정하게 유지한다. useRecycle 값이 'false' 이면 카드 엘리먼트가 추가될수록 DOM 개수가 계속 증가한다.</p></div>
+            <div class="description en"><p>The number of DOMs handled by module. If the count value is greater than zero, the number of DOMs is maintained. If the count value is zero or less than zero, the number of DOMs will increase as card elements are added. </p></div>
+            <div class="description ko"><p>모듈이 유지할 실제 DOM의 개수. count 값이 0보다 크면 DOM 개수를 일정하게 유지한다. count 값이 0 이하면 카드 엘리먼트가 추가될수록 DOM 개수가 계속 증가한다.</p></div>
             
         </div>
 
@@ -399,46 +365,9 @@
     <li>
         <!-- parameter name -->
         <div>
-            <strong>isOverflowScroll</strong>
+            <strong>defaultGroupKey</strong>
             
-                (default: <code>false</code>)
-            
-
-            
-                
-                    <span class="optional">optional</span>
-                
-                
-                    
-                
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Boolean</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Indicates whether overflow:scroll is applied</p></div>
-            <div class="description ko"><p>overflow:scroll 적용여부를 결정한다.</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>horizontal</strong>
-            
-                (default: <code>false</code>)
+                (default: <code>null</code>)
             
 
             
@@ -453,7 +382,7 @@
         <!-- parameter type -->
         
         <div>Type: 
-<span class="param-type">Boolean</span>
+<span class="param-type">String</span>
 
 </div>
         
@@ -461,8 +390,8 @@
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>Direction of the scroll movement (true: horizontal, false: vertical) </p></div>
-            <div class="description ko"><p>스크롤 이동 방향 (true 가로방향, false 세로방향</p></div>
+            <div class="description en"><p>The default group key configured in a card element contained in the markup upon initialization of a module object </p></div>
+            <div class="description ko"><p>모듈 객체를 초기화할 때 마크업에 있는 카드 엘리먼트에 설정할 그룹 키 </p></div>
             
         </div>
 
@@ -510,6 +439,43 @@
     <li>
         <!-- parameter name -->
         <div>
+            <strong>isOverflowScroll</strong>
+            
+                (default: <code>false</code>)
+            
+
+            
+                
+                    <span class="optional">optional</span>
+                
+                
+                    
+                
+            
+        </div>
+        <!-- parameter type -->
+        
+        <div>Type: 
+<span class="param-type">Boolean</span>
+
+</div>
+        
+    
+        <!-- Description -->
+        <div>
+            
+            <div class="description en"><p>Indicates whether overflow:scroll is applied</p></div>
+            <div class="description ko"><p>overflow:scroll 적용여부를 결정한다.</p></div>
+            
+        </div>
+
+        <!-- Sub parameters -->
+        
+    </li>
+    
+    <li>
+        <!-- parameter name -->
+        <div>
             <strong>threshold</strong>
             
                 (default: <code>300</code>)
@@ -535,8 +501,8 @@
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>The threshold size of an event area where card elements are added to a layout.</p></div>
-            <div class="description ko"><p>레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.</p></div>
+            <div class="description en"><p>The threshold size of an event area where card elements are added to a layout.<br>- append event: If the current vertical position of the scroll bar is greater than &quot;the bottom property value of the card element at the top of the layout&quot; plus &quot;the value of the threshold option&quot;, the append event will occur.<br>- prepend event: If the current vertical position of the scroll bar is less than &quot;the bottom property value of the card element at the top of the layout&quot; minus &quot;the value of the threshold option&quot;, the prepend event will occur. </p></div>
+            <div class="description ko"><p>−    레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.<br>- append 이벤트: 현재 스크롤의 y 좌표 값이 '레이아웃의 맨 아래에 있는 카드 엘리먼트의 top 속성의 값 + threshold 옵션의 값'보다 크면 append 이벤트가 발생한다.<br>- prepend 이벤트: 현재 스크롤의 y 좌표 값이 '레이아웃의 맨 위에 있는 카드 엘리먼트의 bottom 속성의 값 - threshold 옵션의 값'보다 작으면 prepend 이벤트가 발생한다</p></div>
             
         </div>
 
@@ -699,13 +665,6 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
 
     
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="eg.InfiniteGrid.GridLayout.html">GridLayout</a></dt>
-            <dd></dd>
-        </dl>
-    
 
     
 
@@ -720,12 +679,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     <div class="nameContainer">
         <h4 class="name" id="append">
             
-            append<span class="signature">(elements, <span class="optional">groupKey</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>}</span>
+            append<span class="signature">(elements, <span class="optional">groupKey</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Number}</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line134">line 134</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line273">line 273</a>
         </div>
         
     </div>
@@ -736,12 +695,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
     
 	<div class="description en">
-		<p>Adds a card element at the bottom of a layout. This method is available only if the isProcessing() method returns false.</p>
+		<p>Adds a card element at the bottom of a grid layout. This method is available only if the isProcessing() method returns false.</p>
 	</div>
 	
 	
 	<div class="description ko">
-		<p>카드 엘리먼트를 레이아웃 아래에 추가한다. isProcessing() 메서드의 반환값이 'false'일 때만 이 메서드를 사용할 수 있다<br>이 메소드는 isProcessing()의 반환값이 false일 경우에만 사용 가능하다.</p>
+		<p>카드 엘리먼트를 그리드 레이아웃의 아래에 추가한다. isProcessing() 메서드의 반환값이 'false'일 때만 이 메서드를 사용할 수 있다<br>이 메소드는 isProcessing()의 반환값이 false일 경우에만 사용 가능하다.</p>
 	</div>
 	
 
@@ -819,9 +778,8 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>The group key to be configured in a card element. It is automatically generated by default.</p>
-</div>
-            <div class="description ko"><p>추가할 카드 엘리먼트에 설정할 그룹 키. 생략하면 값이 자동으로 생성된다.</p></div>
+            <div class="description en"><p>The group key to be configured in a card element. It is set to &quot;undefined&quot; by default.</p></div>
+            <div class="description ko"><p>추가할 카드 엘리먼트에 설정할 그룹 키. 생략하면 값이 'undefined'로 설정된다</p></div>
             
         </div>
 
@@ -860,15 +818,15 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             <td class="type">
             
                     	
-                        <a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>
+                        Number
                         
                         
                     
             </td>
             <td class="description last">
                 
-                <div class="en">An instance of a module itself</div>
-                <div class="ko"><p>모듈 자신의 인스턴스</p></div>
+                <div class="en">The number of added card elements </div>
+                <div class="ko"><p>추가된 카드 엘리먼트의 개수</p></div>
                 
 
                 
@@ -880,14 +838,6 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
 
     
     
-    
-        <h5>Example</h5>
-        
-
-    
-    <pre class="prettyprint"><code><p>infinitegrid.append(&quot;&lt;div class='item'&gt;test1&lt;/div&gt;&lt;div class='item'&gt;test2&lt;/div&gt;&quot;);<br>infinitegrid.append([&quot;&lt;div class='item'&gt;test1&lt;/div&gt;&quot;, &quot;&lt;div class='item'&gt;test2&lt;/div&gt;&quot;]);<br>infinitegrid.append([HTMLElement1, HTMLElement2]);<br>infinitegrid.append(jQuery([&quot;&lt;div class='item'&gt;test1&lt;/div&gt;&quot;, &quot;&lt;div class='item'&gt;test2&lt;/div&gt;&quot;]));</p></code></pre>
-    
-
     
 
     
@@ -931,7 +881,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line397">line 397</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line293">line 293</a>
         </div>
         
     </div>
@@ -1048,7 +998,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line621">line 621</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line544">line 544</a>
         </div>
         
     </div>
@@ -1120,14 +1070,14 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="getGroupKeys">
+        <h4 class="name" id="getBottomElement">
             
-            getGroupKeys<span class="signature">(includeCached)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array}</span>
+            getBottomElement<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{HTMLElement}</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line350">line 350</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line319">line 319</a>
         </div>
         
     </div>
@@ -1138,12 +1088,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
     
 	<div class="description en">
-		<p>Returns the list of group keys which belongs to card elements currently being maintained. You can use the append() or prepend() method to configure group keys so that multiple card elements can be managed at once. If you do not use these methods to configure group keys, groupkey is automatically generated.</p>
+		<p>Returns a card element at the bottom of a layout.</p>
 	</div>
 	
 	
 	<div class="description ko">
-		<p>현재 유지하고 있는 카드 엘리먼트의 그룹 키 목록을 반환한다. 여러 개의 카드 엘리먼트를 묶어서 관리할 수 있도록 append() 메서드나 prepend() 메서드에서 그룹 키를 지정할 수 있다. append() 메서드나 prepend() 메서드에서 그룹 키를 지정하지 않았다면 자동으로 그룹키가 생성된다.</p>
+		<p>레이아웃의 맨 아래에 있는 카드 엘리먼트를 반환한다.</p>
 	</div>
 	
 
@@ -1152,39 +1102,122 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
     
     
-        
-
-<ul class="parameters">
     
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>includeCached</strong>
-            
+    
 
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
             
+            <td class="type">
+            
+                    	
+                        HTMLElement
+                        
+                        
+                    
+            </td>
+            <td class="description last">
+                
+                <div class="en">Card element at the bottom of a layout (if the position of card elements are same, it returns the first right element)</div>
+                <div class="ko"><p>레이아웃의 맨 아래에 있는 카드 엘리먼트 (카드의 위치가 같은 경우, 오른쪽 엘리먼트가 반환된다)</p></div>
+                
+
+                
+            </td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    <!-- if data.codepen -->
+</dl>
+
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="getGroupKeys">
+            
+            getGroupKeys<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line221">line 221</a>
         </div>
-        <!-- parameter type -->
         
-        <div>Type: 
-<span class="param-type">Boolean</span>
+    </div>
 
-</div>
-        
     
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Indicates whether to include the cached groups. </p></div>
-            <div class="description ko"><p>캐싱된 그룹을 포함할지 여부를 나타낸다.</p></div>
-            
-        </div>
+</dt>
+<dd>
+    
+    
+	<div class="description en">
+		<p>Returns the list of group keys which belongs to card elements currently being maintained. You can use the append() or prepend() method to configure group keys so that multiple card elements can be managed at once. If you do not use these methods to configure group keys, it returns undefined as a group key.</p>
+	</div>
+	
+	
+	<div class="description ko">
+		<p>현재 유지하고 있는 카드 엘리먼트의 그룹 키 목록을 반환한다. 여러 개의 카드 엘리먼트를 묶어서 관리할 수 있도록 append() 메서드나 prepend() 메서드에서 그룹 키를 지정할 수 있다. append() 메서드나 prepend() 메서드에서 그룹 키를 지정하지 않았다면 'undefined'가 그룹 키로 반환된다</p>
+	</div>
+	
 
-        <!-- Sub parameters -->
-        
-    </li>
     
-</ul>
+    
+    
+    
     
     
     
@@ -1271,159 +1304,6 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="getItems">
-            
-            getItems<span class="signature">(includeCached)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line200">line 200</a>
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-	<div class="description en">
-		<p>Returns the layouted items.</p>
-	</div>
-	
-	
-	<div class="description ko">
-		<p>레이아웃된 아이템들을 반환한다.</p>
-	</div>
-	
-
-    
-    
-    
-    
-    
-        
-
-<ul class="parameters">
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>includeCached</strong>
-            
-                (default: <code>false</code>)
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Boolean</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Indicates whether to include the cached items. </p></div>
-            <div class="description ko"><p>캐싱된 아이템을 포함할지 여부를 나타낸다.</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-</ul>
-    
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                    	
-                        Array
-                        
-                        
-                    
-            </td>
-            <td class="description last">
-                
-                <div class="en">List of items </div>
-                <div class="ko"><p>아이템의 목록</p></div>
-                
-
-                
-            </td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-
-    
-<dl class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-
-    <!-- if data.codepen -->
-</dl>
-
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
         <h4 class="name" id="getStatus">
             
             getStatus<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Object}</span>
@@ -1431,7 +1311,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line361">line 361</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line150">line 150</a>
         </div>
         
     </div>
@@ -1494,6 +1374,123 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
                 
                 <div class="en">State object of the eg.InfiniteGrid module</div>
                 <div class="ko"><p>eg.InfiniteGrid 모듈의 상태 객체</p></div>
+                
+
+                
+            </td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    <!-- if data.codepen -->
+</dl>
+
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="getTopElement">
+            
+            getTopElement<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{HTMLElement}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line307">line 307</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+	<div class="description en">
+		<p>Returns a card element at the top of a layout.</p>
+	</div>
+	
+	
+	<div class="description ko">
+		<p>레이아웃의 맨 위에 있는 카드 엘리먼트를 반환한다.</p>
+	</div>
+	
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                    	
+                        HTMLElement
+                        
+                        
+                    
+            </td>
+            <td class="description last">
+                
+                <div class="en">Card element at the top of a layout. (if the position of card elements are same, it returns the first left element) </div>
+                <div class="ko"><p>레이아웃의 맨 위에 있는 카드 엘리먼트 (카드의 위치가 같은 경우, 왼쪽 엘리먼트가 반환된다)</p></div>
                 
 
                 
@@ -1709,7 +1706,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line408">line 408</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line203">line 203</a>
         </div>
         
     </div>
@@ -1819,6 +1816,123 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id="isRecycling">
+            
+            isRecycling<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Boolean}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line212">line 212</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+	<div class="description en">
+		<p>Checks whether the total number of added card elements is greater than the value of the count option. Note that the value of the count option is always greater than zero. If it returns true, the number of DOMs won't increase even though card elements are added; instead of adding a new DOM, existing DOMs are recycled to maintain the number of DOMs.</p>
+	</div>
+	
+	
+	<div class="description ko">
+		<p>추가된 카드 엘리먼트의 전체 개수가 count 옵션의 값보다 큰지 확인한다. 단, count 옵션의 값은 0보다 크다. 'true'가 반환되면 카드 엘리먼트가 더 추가돼도 DOM의 개수를 증가하지 않고 기존 DOM을 재활용(recycle)해 DOM의 개수를 일정하게 유지한다</p>
+	</div>
+	
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                    	
+                        Boolean
+                        
+                        
+                    
+            </td>
+            <td class="description last">
+                
+                <div class="en">Indicates whether the total number of added card elements is greater than the value of the count option. </div>
+                <div class="ko"><p>추가된 카드 엘리먼트의 전체 개수가 count 옵션의 값보다 큰지 여부</p></div>
+                
+
+                
+            </td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    <!-- if data.codepen -->
+</dl>
+
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="layout">
             
             layout<span class="signature">(<span class="optional">isRelayout</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>}</span>
@@ -1826,7 +1940,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line266">line 266</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line232">line 232</a>
         </div>
         
     </div>
@@ -2549,12 +2663,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     <div class="nameContainer">
         <h4 class="name" id="prepend">
             
-            prepend<span class="signature">(elements, <span class="optional">groupKey</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>}</span>
+            prepend<span class="signature">(elements, <span class="optional">groupKey</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Number}</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line151">line 151</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line284">line 284</a>
         </div>
         
     </div>
@@ -2565,12 +2679,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
     
 	<div class="description en">
-		<p>Adds a card element at the top of a layout. This method is available only if the isProcessing() method returns false.</p>
+		<p>Adds a card element at the top of a grid layout. This method is available only if the isProcessing() method returns false and the isRecycling() method returns true.</p>
 	</div>
 	
 	
 	<div class="description ko">
-		<p>카드 엘리먼트를 레이아웃의 위에 추가한다. isProcessing() 메서드의 반환값이 'false'일 때만 이 메서드를 사용할 수 있다</p>
+		<p>카드 엘리먼트를 그리드 레이아웃의 위에 추가한다. isProcessing() 메서드의 반환값이 'false'이고, isRecycling() 메서드의 반환값이 'true'일 때만 이 메서드를 사용할 수 있다</p>
 	</div>
 	
 
@@ -2648,9 +2762,8 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>The group key to be configured in a card element. It is automatically generated by default.</p>
-</div>
-            <div class="description ko"><p>추가할 카드 엘리먼트에 설정할 그룹 키. 생략하면 값이 자동으로 생성된다.</p></div>
+            <div class="description en"><p>The group key to be configured in a card element. It is set to &quot;undefined&quot; by default.</p></div>
+            <div class="description ko"><p>추가할 카드 엘리먼트에 설정할 그룹 키. 생략하면 값이 'undefined'로 설정된다</p></div>
             
         </div>
 
@@ -2689,15 +2802,15 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             <td class="type">
             
                     	
-                        <a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>
+                        Number
                         
                         
                     
             </td>
             <td class="description last">
                 
-                <div class="en">An instance of a module itself</div>
-                <div class="ko"><p>모듈 자신의 인스턴스</p></div>
+                <div class="en">The number of added card elements </div>
+                <div class="ko"><p>추가된 카드 엘리먼트의 개수</p></div>
                 
 
                 
@@ -2709,14 +2822,6 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
 
     
     
-    
-        <h5>Example</h5>
-        
-
-    
-    <pre class="prettyprint"><code><p>infinitegrid.prepend(&quot;&lt;div class='item'&gt;test1&lt;/div&gt;&lt;div class='item'&gt;test2&lt;/div&gt;&quot;);<br>infinitegrid.prepend([&quot;&lt;div class='item'&gt;test1&lt;/div&gt;&quot;, &quot;&lt;div class='item'&gt;test2&lt;/div&gt;&quot;]);<br>infinitegrid.prepend([HTMLElement1, HTMLElement2]);<br>infinitegrid.prepend(jQuery([&quot;&lt;div class='item'&gt;test1&lt;/div&gt;&quot;, &quot;&lt;div class='item'&gt;test2&lt;/div&gt;&quot;]));</p></code></pre>
-    
-
     
 
     
@@ -2760,7 +2865,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line317">line 317</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line536">line 536</a>
         </div>
         
     </div>
@@ -2904,201 +3009,14 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="setLayout">
-            
-            setLayout<span class="signature">(LayoutKlass, options)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line187">line 187</a>
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-	<div class="description en">
-		<p>Specifies the Layout class to use.</p>
-	</div>
-	
-	
-	<div class="description ko">
-		<p>사용할 Layout 클래스를 지정한다.</p>
-	</div>
-	
-
-    
-    
-    
-    
-    
-        
-
-<ul class="parameters">
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>LayoutKlass</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Class</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>The Layout class to use </p></div>
-            <div class="description ko"><p>사용할 Layout 클래스</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>options</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Object</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Options to apply to the Layout.</p></div>
-            <div class="description ko"><p>Layout에 적용할 옵션</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-</ul>
-    
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                    	
-                        <a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>
-                        
-                        
-                    
-            </td>
-            <td class="description last">
-                
-                <div class="en">An instance of a module itself</div>
-                <div class="ko"><p>모듈 자신의 인스턴스</p></div>
-                
-
-                
-            </td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-        <h5>Example</h5>
-        
-
-    
-    <pre class="prettyprint"><code><p>infinitegrid.setLayout(eg.InfiniteGrid.GridLayout, {<br> margin: 10,<br> align: &quot;start&quot;<br>});<br>infinitegrid.setLayout(eg.InfiniteGrid.JustifiedLayout, {<br> margin: 10,<br> minSize: 100,<br> maxSize: 200<br>});<br>infinitegrid.setLayout(eg.InfiniteGrid.SquareLayout, {<br> margin: 10,<br> column: 2<br>});<br>infinitegrid.setLayout(eg.InfiniteGrid.FrameLayout, {<br> margin: 10,<br> frame: [<br>  [1, 2],<br>  [4, 3],<br> ]<br>});<br>infinitegrid.setLayout(eg.InfiniteGrid.PackingLayout, {<br> margin: 10,<br> aspectRatio: 1.5<br>});</p></code></pre>
-    
-
-    
-
-    
-<dl class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-
-    <!-- if data.codepen -->
-</dl>
-
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
         <h4 class="name" id="setStatus">
             
-            setStatus<span class="signature">(status, <span class="optional">applyScrollPos</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>}</span>
+            setStatus<span class="signature">(status, applyScrollPos)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="eg.InfiniteGrid.html">eg.InfiniteGrid</a>}</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line377">line 377</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line177">line 177</a>
         </div>
         
     </div>
@@ -3134,11 +3052,6 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             
 
             
-                
-                
-                    
-                
-            
         </div>
         <!-- parameter type -->
         
@@ -3165,16 +3078,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <div>
             <strong>applyScrollPos</strong>
             
-                (default: <code>true</code>)
-            
 
-            
-                
-                    <span class="optional">optional</span>
-                
-                
-                    
-                
             
         </div>
         <!-- parameter type -->
@@ -3488,7 +3392,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line516">line 516</a>
+            <a href="src_eventHandler.js.html">eventHandler.js</a>, <a href="src_eventHandler.js.html#line37">line 37</a>
         </div>
         
     </div>
@@ -3499,12 +3403,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
     
 	<div class="description en">
-		<p>This event is fired when a card element must be added at the bottom or right of a layout because there is no card to be displayed on screen when a user scrolls near bottom or right.</p>
+		<p>This event is fired when a card element must be added at the bottom of a grid layout because there is no card to be displayed on screen when a user scrolls near bottom.</p>
 	</div>
 	
 	
 	<div class="description ko">
-		<p>카드 엘리먼트가 레이아웃의 아래나 오른쪽에 추가돼야 할 때 발생하는 이벤트. 사용자가 아래나 오른쪽으로 스크롤해서 화면에 표시될 카드가 없을 때 발생한다</p>
+		<p>카드 엘리먼트가 그리드 레이아웃의 아래에 추가돼야 할 때 발생하는 이벤트. 사용자가 아래로 스크롤해서 화면에 표시될 카드가 없을 때 발생한다</p>
 	</div>
 	
 
@@ -3550,182 +3454,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     <li>
         <!-- parameter name -->
         <div>
-            <strong>isTrusted</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Boolean</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Returns true if an event was generated by the user action, or false if it was caused by a script or API call </p></div>
-            <div class="description ko"><p>사용자의 액션에 의해 이벤트가 발생하였으면 true, 스크립트나 API호출에 의해 발생하였을 경우에는 false를 반환한다.</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-</ul>
-        
-    </li>
-    
-</ul>
-    
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-    
-<dl class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-
-    <!-- if data.codepen -->
-</dl>
-
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="event:change">
-            
-            change
-        </h4>
-    
-        
-        <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line544">line 544</a>
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-	<div class="description en">
-		<p>This event is fired when the user scrolls.</p>
-	</div>
-	
-	
-	<div class="description ko">
-		<p>사용자가 스크롤 할 경우 발생하는 이벤트.</p>
-	</div>
-	
-
-    
-    
-    
-    
-    
-        
-
-<ul class="parameters">
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>param</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Object</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>The object of data to be sent to an event </p></div>
-            <div class="description ko"><p>이벤트에 전달되는 데이터 객체</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-            
-
-<ul class="parameters">
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>isForward</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Boolean</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Indicates whether the scroll progression direction is forward or backword. </p></div>
-            <div class="description ko"><p>스크롤 진행방향이 앞쪽으로 진행하는 지, 뒤쪽으로 진행하는지를 나타낸다.</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>scrollPos</strong>
+            <strong>scrollTop</strong>
             
 
             
@@ -3741,36 +3470,8 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>Current scroll position value relative to the infiniteGrid container element. </p></div>
-            <div class="description ko"><p>infiniteGrid 컨테이너 엘리먼트 기준의 현재 스크롤 위치값</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
-        
-    </li>
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>orgScrollPos</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Boolean</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Current position of the scroll </p></div>
-            <div class="description ko"><p>현재 스크롤 위치값</p></div>
+            <div class="description en"><p>Current vertical position of the scroll bar</p></div>
+            <div class="description ko"><p>현재 스크롤의 y 좌표 값</p></div>
             
         </div>
 
@@ -3807,34 +3508,6 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     </li>
     
 </ul>
-        
-    </li>
-    
-    <li>
-        <!-- parameter name -->
-        <div>
-            <strong>options.horizontal</strong>
-            
-
-            
-        </div>
-        <!-- parameter type -->
-        
-        <div>Type: 
-<span class="param-type">Boolean</span>
-
-</div>
-        
-    
-        <!-- Description -->
-        <div>
-            
-            <div class="description en"><p>Direction of the scroll movement (true: horizontal, false: vertical) </p></div>
-            <div class="description ko"><p>스크롤 이동 방향 (true 가로방향, false 세로방향</p></div>
-            
-        </div>
-
-        <!-- Sub parameters -->
         
     </li>
     
@@ -3894,7 +3567,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line587">line 587</a>
+            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line354">line 354</a>
         </div>
         
     </div>
@@ -4012,7 +3685,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     <li>
         <!-- parameter name -->
         <div>
-            <strong>scrollPos</strong>
+            <strong>distance</strong>
             
 
             
@@ -4028,8 +3701,8 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>Current scroll position value relative to the infiniteGrid container element. </p></div>
-            <div class="description ko"><p>infiniteGrid 컨테이너 엘리먼트 기준의 현재 스크롤 위치값</p></div>
+            <div class="description en"><p>Distance the card element at the top of a grid layout has moved after the layoutComplete event is fired. In other words, it is the same as an increased height with a new card element added using the prepend() method </p></div>
+            <div class="description ko"><p>그리드 레이아웃의 맨 위에 있던 카드 엘리먼트가 layoutComplete 이벤트 발생 후 이동한 거리. 즉, prepend() 메서드로 카드 엘리먼트가 추가돼 늘어난 높이다.</p></div>
             
         </div>
 
@@ -4040,7 +3713,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     <li>
         <!-- parameter name -->
         <div>
-            <strong>orgScrollPos</strong>
+            <strong>croppedCount</strong>
             
 
             
@@ -4048,7 +3721,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- parameter type -->
         
         <div>Type: 
-<span class="param-type">Boolean</span>
+<span class="param-type">Number</span>
 
 </div>
         
@@ -4056,8 +3729,8 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>Current position of the scroll </p></div>
-            <div class="description ko"><p>현재 스크롤 위치값</p></div>
+            <div class="description en"><p>The number of deleted card elements to maintain the number of DOMs</p></div>
+            <div class="description ko"><p>일정한 DOM 개수를 유지하기 위해, 삭제한 카드 엘리먼트들의 개수</p></div>
             
         </div>
 
@@ -4153,7 +3826,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
         
         <div class="tag-source">
-            <a href="src_InfiniteGrid.js.html">InfiniteGrid.js</a>, <a href="src_InfiniteGrid.js.html#line533">line 533</a>
+            <a href="src_eventHandler.js.html">eventHandler.js</a>, <a href="src_eventHandler.js.html#line61">line 61</a>
         </div>
         
     </div>
@@ -4164,12 +3837,12 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
     
     
 	<div class="description en">
-		<p>This event is fired when a card element must be added at the top or left of a layout because there is no card to be displayed on screen when a user scrolls near top or left.</p>
+		<p>This event is fired when a card element must be added at the top of a grid layout because there is no card to be displayed on screen when a user scrolls near top. This event is available only if the isRecycling() method returns true.</p>
 	</div>
 	
 	
 	<div class="description ko">
-		<p>카드가 레이아웃의 위나 왼쪽에 추가돼야 할 때 발생하는 이벤트. 사용자가 위나 왼쪽으로 스크롤해서 화면에 표시될 카드가 없을 때 발생한다.</p>
+		<p>카드가 그리드 레이아웃의 위에 추가돼야 할 때 발생하는 이벤트. 사용자가 위로 스크롤해서 화면에 표시될 카드가 없을 때 발생한다. 이 이벤트는 isRecycling() 메서드의 반환값이 'true'일 때만 발생한다</p>
 	</div>
 	
 
@@ -4201,7 +3874,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         <!-- Description -->
         <div>
             
-            <div class="description en"><p>The object of data to be sent to an event </p></div>
+            <div class="description en"><p>The object of data to be sent to an event</p></div>
             <div class="description ko"><p>이벤트에 전달되는 데이터 객체</p></div>
             
         </div>
@@ -4211,6 +3884,34 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
             
 
 <ul class="parameters">
+    
+    <li>
+        <!-- parameter name -->
+        <div>
+            <strong>scrollTop</strong>
+            
+
+            
+        </div>
+        <!-- parameter type -->
+        
+        <div>Type: 
+<span class="param-type">Number</span>
+
+</div>
+        
+    
+        <!-- Description -->
+        <div>
+            
+            <div class="description en"><p>Current vertical position of the scroll bar</p></div>
+            <div class="description ko"><p>현재 스크롤의 y 좌표 값</p></div>
+            
+        </div>
+
+        <!-- Sub parameters -->
+        
+    </li>
     
     <li>
         <!-- parameter name -->
@@ -4310,7 +4011,7 @@ var some = new eg.InfiniteGrid(&quot;#grid&quot;).on(&quot;layoutComplete&quot;,
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Nov 15 2017 14:45:42 GMT+0900 (KST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Nov 03 2017 15:59:55 GMT+0900 (KST)
         </footer>
     </div>
 </div>
