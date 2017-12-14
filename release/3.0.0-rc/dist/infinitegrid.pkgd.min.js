@@ -602,6 +602,7 @@ var DOMRenderer = function () {
 		}
 		this._size = {
 			containerOffset: 0,
+			viewport: -1,
 			container: -1,
 			view: -1
 		};
@@ -654,9 +655,9 @@ var DOMRenderer = function () {
 	};
 
 	DOMRenderer.prototype.resize = function resize() {
-		if (this.isNeededResize()) {
-			var isVertical = this.options.isVertical;
+		var isVertical = this.options.isVertical;
 
+		if (this.isNeededResize()) {
 			this._size = {
 				containerOffset: this.options.isOverflowScroll ? 0 : this.container["offset" + (isVertical ? "Top" : "Left")],
 				viewport: this._calcSize(),
@@ -664,6 +665,8 @@ var DOMRenderer = function () {
 				item: null
 			};
 			return true;
+		} else {
+			this._size.view = isVertical ? (0, _utils.innerHeight)(this.view) : (0, _utils.innerWidth)(this.view);
 		}
 		return false;
 	};
@@ -890,8 +893,8 @@ var FrameLayout = function () {
 		var shapesSize = this._shapes[size2Name];
 		var shapes = this._shapes.shapes;
 		var shapesLength = shapes.length;
-		var startOutline = (0, _utils.fill)(shapesSize, -99999);
-		var endOutline = (0, _utils.fill)(shapesSize, -99999);
+		var startOutline = (0, _utils.fill)(shapesSize, _consts.DUMMY_POSITION);
+		var endOutline = (0, _utils.fill)(shapesSize, _consts.DUMMY_POSITION);
 		var dist = 0;
 		var end = 0;
 		var startIndex = -1;
@@ -918,7 +921,7 @@ var FrameLayout = function () {
 				var size2 = shapeSize2 * (itemSize2 + margin) - margin;
 
 				for (var k = shapePos2; k < shapePos2 + shapeSize2 && k < shapesSize; ++k) {
-					if (startOutline[k] === -99999) {
+					if (startOutline[k] === _consts.DUMMY_POSITION) {
 						startOutline[k] = pos1;
 					}
 					if (startIndex === -1) {
@@ -953,9 +956,7 @@ var FrameLayout = function () {
 			dist = end;
 
 			for (var _j = 0; _j < shapesSize; ++_j) {
-				if (startOutline[_j] === -99999) {
-					startOutline[_j] = Math.max.apply(Math, startOutline);
-					endOutline[_j] = startOutline[_j];
+				if (startOutline[_j] === _consts.DUMMY_POSITION) {
 					continue;
 				}
 				// the dist between frame's end outline and next frame's start outline
@@ -963,25 +964,32 @@ var FrameLayout = function () {
 				dist = Math.min(startOutline[_j] + end - endOutline[_j], dist);
 			}
 		}
+		for (var _i2 = 0; _i2 < shapesSize; ++_i2) {
+			if (startOutline[_i2] !== _consts.DUMMY_POSITION) {
+				continue;
+			}
+			startOutline[_i2] = Math.max.apply(Math, startOutline);
+			endOutline[_i2] = startOutline[_i2];
+		}
 		// The target outline is start outline when type is APPENDING
 		var targetOutline = isAppend ? startOutline : endOutline;
 		var prevOutlineEnd = outline.length === 0 ? 0 : Math[isAppend ? "max" : "min"].apply(Math, outline);
 		var prevOutlineDist = isAppend ? 0 : end;
 
 		if (frameFill && outline.length === shapesSize) {
-			prevOutlineDist = 99999999;
-			for (var _i2 = 0; _i2 < shapesSize; ++_i2) {
-				if (startOutline[_i2] === endOutline[_i2]) {
+			prevOutlineDist = -_consts.DUMMY_POSITION;
+			for (var _i3 = 0; _i3 < shapesSize; ++_i3) {
+				if (startOutline[_i3] === endOutline[_i3]) {
 					continue;
 				}
 				// if appending type is PREPEND, subtract dist from appending group's height.
 
-				prevOutlineDist = Math.min(targetOutline[_i2] + prevOutlineEnd - outline[_i2], prevOutlineDist);
+				prevOutlineDist = Math.min(targetOutline[_i3] + prevOutlineEnd - outline[_i3], prevOutlineDist);
 			}
 		}
-		for (var _i3 = 0; _i3 < shapesSize; ++_i3) {
-			startOutline[_i3] += prevOutlineEnd - prevOutlineDist;
-			endOutline[_i3] += prevOutlineEnd - prevOutlineDist;
+		for (var _i4 = 0; _i4 < shapesSize; ++_i4) {
+			startOutline[_i4] += prevOutlineEnd - prevOutlineDist;
+			endOutline[_i4] += prevOutlineEnd - prevOutlineDist;
 		}
 		items.forEach(function (item) {
 			item.rect[pos1Name] += prevOutlineEnd - prevOutlineDist;
@@ -1225,18 +1233,6 @@ if (typeof Object.create !== "function") {
 var some = new eg.InfiniteGrid("#grid").on("layoutComplete", function(e) {
 	// ...
 });
-
-
-// loading bar
-var some = new eg.InfiniteGrid("#grid", {
-	loadingBar: `<div class="loading">LOADING</div>`,
-});
-var some2 = new eg.InfiniteGrid("#grid", {
-	loadingBar: {
-		"append": appendElelement,
-		"prepend": prependElement,
-	},
-});
 </script>
 ```
  *
@@ -1255,8 +1251,6 @@ var InfiniteGrid = function (_Component) {
   * @param {Boolean} [options.horizontal=false] Direction of the scroll movement (true: horizontal, false: vertical) <ko>스크롤 이동 방향 (true 가로방향, false 세로방향</ko>
   * @param {Boolean} [options.isEqualSize=false] Indicates whether sizes of all card elements are equal to one another. If sizes of card elements to be arranged are all equal and this option is set to "true", the performance of layout arrangement can be improved. <ko>카드 엘리먼트의 크기가 동일한지 여부. 배치될 카드 엘리먼트의 크기가 모두 동일할 때 이 옵션을 'true'로 설정하면 레이아웃 배치 성능을 높일 수 있다</ko>
   * @param {Number} [options.threshold=100] The threshold size of an event area where card elements are added to a layout.<ko>레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.</ko>
-  * @param {String|Object} [options.loadingBar={}] The loading bar HTML markup or element or element selector <ko> 로딩 바 HTML 또는 element 또는 selector </ko>
-  *
   */
 	function InfiniteGrid(element, options) {
 		_classCallCheck(this, InfiniteGrid);
@@ -1269,8 +1263,7 @@ var InfiniteGrid = function (_Component) {
 			threshold: 100,
 			isEqualSize: false,
 			useRecycle: true,
-			horizontal: false,
-			loadingBar: {}
+			horizontal: false
 		}, options);
 		_consts.IS_ANDROID2 && (_this.options.isOverflowScroll = false);
 		_this._isVertical = !_this.options.horizontal;
@@ -1289,7 +1282,6 @@ var InfiniteGrid = function (_Component) {
 				return _this._onCheck(param);
 			}
 		});
-		_this._initLoadingBar();
 		return _this;
 	}
 	/**
@@ -1428,7 +1420,7 @@ var InfiniteGrid = function (_Component) {
 			return 0;
 		}
 		var base = this._getEdgeValue("start");
-		var margin = this._status.loadingSize;
+		var margin = this._getLoadingStatus() === _consts.LOADING_PREPEND && this._status.loadingSize || 0;
 
 		if (!this.options.useRecycle || _consts.DEFENSE_BROWSER) {
 			if (scrollCycle === "before" && margin && base < margin) {
@@ -1492,47 +1484,46 @@ var InfiniteGrid = function (_Component) {
 		if (!this._items.size()) {
 			this._insert((0, _utils.toArray)(this._renderer.container.children), true);
 			return this;
-		} else {
-			this._process(_consts.PROCESSING);
-
-			var data = void 0;
-			var outline = void 0;
-
-			if (isRelayout) {
-				// remove cache
-				data = this._items.get(this._status.startCursor, this._status.endCursor);
-				if (this._renderer.resize()) {
-					this._layout.setSize(this._renderer.getViewportSize());
-					data.forEach(function (v) {
-						data.items = _this2._renderer.updateSize(v.items);
-					});
-				}
-			} else {
-				data = this._items.get(this._status.startCursor, this._items.size());
-				outline = this._items.getOutline(this._status.startCursor, "start");
-			}
-			if (!data.length) {
-				return this;
-			}
-			this._layout.layout(data, outline);
-
-			if (isRelayout) {
-				this._items._data.forEach(function (group, cursor) {
-					if (_this2._status.startCursor <= cursor && cursor <= _this2._status.endCursor) {
-						return;
-					}
-					group.outlines.start = [];
-					group.outlines.end = [];
-				});
-			} else {
-				data.forEach(function (v) {
-					return _this2._items.set(v, v.groupKey);
-				});
-			}
-			this._onLayoutComplete(data, _consts.APPEND, _consts.NO_TRUSTED);
-			_DOMRenderer2["default"].renderItems(this._getVisibleItems());
-			isRelayout && this._watcher.setScrollPos();
 		}
+		this._process(_consts.PROCESSING);
+
+		var data = void 0;
+		var outline = void 0;
+
+		if (isRelayout) {
+			// remove cache
+			data = this._items.get(this._status.startCursor, this._status.endCursor);
+			if (this._renderer.resize()) {
+				this._layout.setSize(this._renderer.getViewportSize());
+				data.forEach(function (v) {
+					data.items = _this2._renderer.updateSize(v.items);
+				});
+			}
+		} else {
+			data = this._items.get(this._status.startCursor, this._items.size());
+			outline = this._items.getOutline(this._status.startCursor, "start");
+		}
+		if (!data.length) {
+			return this;
+		}
+		this._layout.layout(data, outline);
+
+		if (isRelayout) {
+			this._items._data.forEach(function (group, cursor) {
+				if (_this2._status.startCursor <= cursor && cursor <= _this2._status.endCursor) {
+					return;
+				}
+				group.outlines.start = [];
+				group.outlines.end = [];
+			});
+		} else {
+			data.forEach(function (v) {
+				return _this2._items.set(v, v.groupKey);
+			});
+		}
+		this._onLayoutComplete(data, _consts.APPEND, _consts.NO_TRUSTED);
+		_DOMRenderer2["default"].renderItems(this._getVisibleItems());
+		isRelayout && this._watcher.setScrollPos();
 
 		return this;
 	};
@@ -1640,20 +1631,30 @@ var InfiniteGrid = function (_Component) {
 		this._appendLoadingBar();
 		return this;
 	};
+	/**
+  * Specifies the Loading Bar to use for append or prepend items.
+  * @ko 아이템을 append 또는 prepend 하기 위해 사용할 로딩 바를 지정한다.
+  * @param {String|Object} [userLoadingBar={}] The loading bar HTML markup or element or element selector <ko> 로딩 바 HTML 또는 element 또는 selector </ko>
+  * @return {eg.InfiniteGrid} An instance of a module itself<ko>모듈 자신의 인스턴스</ko>
+  */
 
-	InfiniteGrid.prototype._initLoadingBar = function _initLoadingBar() {
-		var loadingBar = this.options.loadingBar;
-		var loadingBarObj = (typeof loadingBar === "undefined" ? "undefined" : _typeof(loadingBar)) === "object" ? loadingBar : {
-			"append": loadingBar,
-			"prepend": loadingBar
+
+	InfiniteGrid.prototype.setLoadingBar = function setLoadingBar() {
+		var userLoadingBar = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+		var loadingBarObj = (typeof userLoadingBar === "undefined" ? "undefined" : _typeof(userLoadingBar)) === "object" ? userLoadingBar : {
+			"append": userLoadingBar,
+			"prepend": userLoadingBar
 		};
 
 		this._status.loadingSize = 0;
 		this._status.loadingStyle = {};
-		this._loadingBar = loadingBarObj;
+		this._loadingBar = this._loadingBar || {};
+		var loadingBar = this._loadingBar;
+
 		for (var type in loadingBarObj) {
-			loadingBarObj[type] = (0, _utils.$)(loadingBarObj[type]);
-			loadingBarObj[type].className += " " + _consts.IGNORE_CLASSNAME;
+			loadingBar[type] = (0, _utils.$)(loadingBarObj[type]);
+			loadingBar[type].className += " " + _consts.IGNORE_CLASSNAME;
 		}
 		this._appendLoadingBar();
 		return this;
@@ -2054,6 +2055,7 @@ var InfiniteGrid = function (_Component) {
 
 		var scrollPos = this._watcher.getScrollPos();
 		var orgScrollPos = this._watcher.getOrgScrollPos();
+		var isScroll = this._renderer.getViewSize() < this._renderer.getContainerOffset() + size;
 
 		this._watcher.reset();
 		/**
@@ -2064,6 +2066,7 @@ var InfiniteGrid = function (_Component) {
    * @param {Object} param The object of data to be sent to an event <ko>이벤트에 전달되는 데이터 객체</ko>
    * @param {Array} param.target Rearranged card elements<ko>재배치된 카드 엘리먼트들</ko>
    * @param {Boolean} param.isAppend Checks whether the append() method is used to add a card element. It returns true even though the layoutComplete event is fired after the layout() method is called. <ko>카드 엘리먼트가 append() 메서드로 추가됐는지 확인한다. layout() 메서드가 호출된 후 layoutComplete 이벤트가 발생해도 'true'를 반환한다.</ko>
+   * @param {Boolean} param.isScroll Checks whether scrolling has occurred after the append(), prepend(), ..., etc method is called
    * @param {Number} param.scrollPos Current scroll position value relative to the infiniteGrid container element. <ko>infiniteGrid 컨테이너 엘리먼트 기준의 현재 스크롤 위치값</ko>
    * @param {Number} param.orgScrollPos Current position of the scroll <ko>현재 스크롤 위치값</ko>
    * @param {Number} param.size The size of container element <ko>컨테이너 엘리먼트의 크기</ko>
@@ -2073,6 +2076,7 @@ var InfiniteGrid = function (_Component) {
 			target: items.concat(),
 			isAppend: isAppend,
 			isTrusted: isTrusted,
+			isScroll: isScroll,
 			scrollPos: scrollPos,
 			orgScrollPos: orgScrollPos,
 			size: size
@@ -2533,7 +2537,7 @@ var ItemManager = function () {
 
 	ItemManager.selectItems = function selectItems(elements, selector) {
 		return elements.filter(function (v) {
-			var classNames = v.className.split("");
+			var classNames = v.className.split(" ");
 
 			if (classNames.some(function (c) {
 				return c === _consts.IGNORE_CLASSNAME;
