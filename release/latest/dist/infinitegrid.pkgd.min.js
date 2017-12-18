@@ -20,7 +20,7 @@
 		exports["InfiniteGrid"] = factory();
 	else
 		root["eg"] = root["eg"] || {}, root["eg"]["InfiniteGrid"] = factory();
-})(this, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -344,7 +344,6 @@ function innerWidth(el) {
 function innerHeight(el) {
 	return _getSize(el, "Height");
 }
-
 var STYLE = exports.STYLE = {
 	vertical: {
 		pos1: "top",
@@ -785,7 +784,7 @@ function getShapes(frame) {
 	};
 }
 /**
- * FrameLayout is a layout that allows you to place items in a given frame. It is a layout that corresponds to a level intermediate between the placement of the image directly by the designer and the layout using the algorithm.
+ * @classdesc FrameLayout is a layout that allows you to place items in a given frame. It is a layout that corresponds to a level intermediate between the placement of the image directly by the designer and the layout using the algorithm.
  * @ko FrameLayout은 주어진 프레임에 맞춰 아이템을 배치하는 레이아웃입니다. 디자이너가 직접 이미지를 배치하는 것과 알고리즘을 사용한 배치의 중간 정도 수준에 해당하는 레이아웃이다.
  * @class eg.InfiniteGrid.FrameLayout
  * @param {Object} [options] The option object of eg.InfiniteGrid.FrameLayout module <ko>eg.InfiniteGrid.FrameLayout 모듈의 옵션 객체</ko>
@@ -1521,7 +1520,7 @@ var InfiniteGrid = function (_Component) {
 				return _this2._items.set(v, v.groupKey);
 			});
 		}
-		this._onLayoutComplete(data, _consts.APPEND, _consts.NO_TRUSTED);
+		this._onLayoutComplete(data, _consts.APPEND, _consts.NO_TRUSTED, false);
 		_DOMRenderer2["default"].renderItems(this._getVisibleItems());
 		isRelayout && this._watcher.setScrollPos();
 
@@ -1731,18 +1730,17 @@ var InfiniteGrid = function (_Component) {
 		var end = remove.lastIndexOf(isAppend ? 1 : -1);
 		var visible = remove.indexOf(0);
 
-		if (visible === -1) {
+		if (visible === -1 || start === -1 || end === -1) {
 			return;
 		}
-		if (start !== -1 && end !== -1) {
-			start = this._status.startCursor + start;
-			end = start + end;
-			_DOMRenderer2["default"].removeItems(this._items.pluck("items", start, end));
-			if (isAppend) {
-				this._status.startCursor = end + 1;
-			} else {
-				this._status.endCursor = start - 1;
-			}
+
+		start = this._status.startCursor + (isAppend ? 0 : start);
+		end = isAppend ? this._status.startCursor + end : this._status.endCursor;
+		_DOMRenderer2["default"].removeItems(this._items.pluck("items", start, end));
+		if (isAppend) {
+			this._status.startCursor = end + 1;
+		} else {
+			this._status.endCursor = start - 1;
 		}
 	};
 	/**
@@ -2033,31 +2031,28 @@ var InfiniteGrid = function (_Component) {
 			}
 		} else if (scrollPos <= targetPos) {
 			this._fit("before");
-			if (!isProcessing) {
-				this._requestPrepend();
-			}
+			this._requestPrepend();
 		}
 	};
 
 	InfiniteGrid.prototype._onLayoutComplete = function _onLayoutComplete(items, isAppend) {
 		var isTrusted = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+		var useRecycle = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : this.options.useRecycle;
 
 		this._isLoading() && this._renderLoading();
 		!isAppend && this._fit("after");
+		useRecycle && this._recycle(isAppend);
+
 		var size = this._getEdgeValue("end");
 
 		// recycle after _fit beacause prepend and append are occured simultaneously by scroll.
-		this.options.useRecycle && this._recycle(isAppend);
 		this._updateEdge();
 
 		isAppend && this._renderer.setContainerSize(size + this._status.loadingSize || 0);
 		this._process(_consts.PROCESSING, false);
 
 		var scrollPos = this._watcher.getScrollPos();
-		var orgScrollPos = this._watcher.getOrgScrollPos();
-		var isScroll = this._renderer.getViewSize() < this._renderer.getContainerOffset() + size;
 
-		this._watcher.reset();
 		/**
    * This event is fired when layout is successfully arranged through a call to the append(), prepend(), or layout() method.
    * @ko 레이아웃 배치가 완료됐을 때 발생하는 이벤트. append() 메서드나 prepend() 메서드, layout() 메서드 호출 후 카드의 배치가 완료됐을 때 발생한다
@@ -2076,12 +2071,18 @@ var InfiniteGrid = function (_Component) {
 			target: items.concat(),
 			isAppend: isAppend,
 			isTrusted: isTrusted,
-			isScroll: isScroll,
+			isScroll: this._renderer.getViewSize() < this._renderer.getContainerOffset() + size,
 			scrollPos: scrollPos,
-			orgScrollPos: orgScrollPos,
+			orgScrollPos: this._watcher.getOrgScrollPos(),
 			size: size
 		});
-		// console.warn("_onLayoutComplete [", this._status.startCursor, this._status.endCursor, "]");
+
+		if (isAppend && scrollPos >= size) {
+			this._requestAppend();
+		} else if (!isAppend && scrollPos <= this._getEdgeValue("start")) {
+			this._fit("before");
+			this._requestPrepend();
+		}
 	};
 
 	InfiniteGrid.prototype._reset = function _reset() {
@@ -2506,6 +2507,8 @@ module.exports = exports["default"];
 
 exports.__esModule = true;
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _consts = __webpack_require__(0);
 
 var _DOMRenderer = __webpack_require__(3);
@@ -2568,11 +2571,16 @@ var ItemManager = function () {
 	ItemManager.prototype.getStatus = function getStatus() {
 		return {
 			_data: this._data.map(function (data) {
-				data.items = data.items.map(function (item) {
-					delete item.el;
-					return item;
+				var items = data.items.map(function (item) {
+					var item2 = _extends({}, item);
+
+					delete item2.el;
+					return item2;
 				});
-				return data;
+				var data2 = _extends({}, data);
+
+				data2.items = items;
+				return data2;
 			})
 		};
 	};
@@ -2916,13 +2924,12 @@ var Watcher = function () {
 	};
 
 	Watcher.prototype._onCheck = function _onCheck() {
-		var orgScrollPos = this.getOrgScrollPos();
 		var prevPos = this.getScrollPos();
+		var orgScrollPos = this.getOrgScrollPos();
 
 		this.setScrollPos(orgScrollPos);
 		var scrollPos = this.getScrollPos();
 
-		// fix that null < 1 is true
 		if (prevPos === null || _consts.IS_IOS && orgScrollPos === 0 || prevPos === scrollPos) {
 			return;
 		}
@@ -2944,6 +2951,7 @@ var Watcher = function () {
 		this._timer.resize = setTimeout(function () {
 			_this._renderer.isNeededResize() && _this._callback.layout && _this._callback.layout();
 			_this._timer.resize = null;
+			_this.reset();
 		}, 100);
 	};
 
@@ -2986,7 +2994,7 @@ var START = _consts.ALIGN.START,
     JUSTIFY = _consts.ALIGN.JUSTIFY;
 
 /**
- * A module used to arrange card elements including content infinitely according to layout type. With this module, you can implement various layouts composed of different card elements whose sizes vary. It guarantees performance by maintaining the number of DOMs the module is handling under any circumstance
+ * @classdesc GridLayout is a layout in which images with the same width are arranged in a staggered arrangement, like a stack of bricks. Adjust the width of all images to the same size, find the lowest height column, and insert a new image.
  * @ko GridLayout는 벽돌을 쌓아 올린 모양처럼 동일한 너비를 가진 이미지가 엇갈려 배열되는 레이아웃이다. 모든 이미지의 너비를 동일한 크기로 조정하고, 가장 높이가 낮은 열을 찾아 새로운 이미지를 삽입한다. 따라서 배치된 이미지 사이에 빈 공간이 생기지는 않지만 배치된 레이아웃의 아래쪽은 울퉁불퉁해진다.
  * @class eg.InfiniteGrid.GridLayout
  * @param {Object} [options] The option object of eg.InfiniteGrid.GridLayout module <ko>eg.InfiniteGrid.GridLayout 모듈의 옵션 객체</ko>
@@ -3319,7 +3327,7 @@ function getColumn(item) {
 }
 
 /**
- * FrameLayout is a layout that allows you to place items in a given frame. It is a layout that corresponds to a level intermediate between the placement of the image directly by the designer and the layout using the algorithm.
+ * @classdesc FrameLayout is a layout that allows you to place items in a given frame. It is a layout that corresponds to a level intermediate between the placement of the image directly by the designer and the layout using the algorithm.
  * @ko FrameLayout은 주어진 프레임에 맞춰 아이템을 배치하는 레이아웃입니다. 디자이너가 직접 이미지를 배치하는 것과 알고리즘을 사용한 배치의 중간 정도 수준에 해당하는 레이아웃이다.
  * @class eg.InfiniteGrid.SquareLayout
  * @extends eg.InfiniteGrid.FrameLayout
@@ -3517,7 +3525,7 @@ function fitArea(item, bestFitArea, itemFitSize, containerFitSize, layoutVertica
 }
 
 /**
- * PackingLayout show important images bigger without sacrificing the inherent size of the image. Rows and columns are separated so that images are dynamically placed within the horizontal and vertical space rather than arranged in an orderly fashion.
+ * @classdesc PackingLayout show important images bigger without sacrificing the inherent size of the image. Rows and columns are separated so that images are dynamically placed within the horizontal and vertical space rather than arranged in an orderly fashion.
  * @ko PackingLayout은 이미지의 본래 크기에 따른 비중을 해치지 않으면서 중요한 이미지는 더 크게 보여 준다. 행과 열이 구분돼 이미지를 정돈되게 배치하는 대신 가로세로 일정 공간 내에서 동적으로 이미지를 배치한다.
  * @class eg.InfiniteGrid.PackingLayout
  * @param {Object} [options] The option object of eg.InfiniteGrid.PackingLayout module <ko>eg.InfiniteGrid.PackingLayout 모듈의 옵션 객체</ko>
@@ -3963,7 +3971,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * 'justified' is a printing term with the meaning that 'it fits in one row wide'. JustifiedLayout is a layout in which the image is filled up on the basis of a line given a width in the meaning of the term.
+ * @classdesc 'justified' is a printing term with the meaning that 'it fits in one row wide'. JustifiedLayout is a layout in which the image is filled up on the basis of a line given a width in the meaning of the term.
  * @ko 'justified'는 '1행의 너비에 맞게 꼭 들어찬'이라는 의미를 가진 인쇄 용어다. 용어의 의미대로 너비가 주어진 한 행을 기준으로 이미지가 가득 차도록 배치하는 레이아웃이다.
  * @class eg.InfiniteGrid.JustifiedLayout
  * @param {Object} [options] The option object of eg.InfiniteGrid.JustifiedLayout module <ko>eg.InfiniteGrid.JustifiedLayout 모듈의 옵션 객체</ko>
