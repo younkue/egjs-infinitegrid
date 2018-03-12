@@ -5,6 +5,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+    <meta property="og:type" content="article"/>
+	<meta property="og:url" content="https://naver.github.io/egjs-infinitegrid/"/>
+	<meta property="og:image" content="https://naver.github.io/egjs-infinitegrid/common/image/InfiniteGrid.png"/>
+	<meta property="og:title" content="InfiniteGrid"/>
+	<meta property="og:description" content="A module used to arrange card elements including content infinitely according to layout type."/>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans|Zilla+Slab:700" rel="stylesheet">    
     <link rel="stylesheet" href="./common/css/bootstrap.min.css">
     <link rel="stylesheet" href="./common/css/page.css">
@@ -16,7 +21,7 @@
 	<link rel="stylesheet" href="assets/css/demo.css">
 
 
-	<script src="https://naver.github.io/egjs-infinitegrid/v3.0.0/dist/infinitegrid.pkgd.js"></script>
+	<script src="release/latest/dist/infinitegrid.pkgd.min.js"></script>
 
 <script>
 	var homeUrl = window.location.href;
@@ -34,7 +39,7 @@
 	// "https://naver.github.io/egjs-infinitegrid/v3.0.0/demo/"
 	
 	//window.HOMELINK + 
-	window.LIBLINK.push("https://naver.github.io/egjs-infinitegrid/v3.0.0/dist/infinitegrid.pkgd.js");
+	window.LIBLINK.push("release/latest/dist/infinitegrid.pkgd.min.js");
 	
 
 	var demoTemplate = '<li class="demo-item"><a href="./assets/html/{target}.html" target="_blank"><p><img src="./assets/image/demos/{target}.gif" /></p><p>{name}</p></a></li>';
@@ -213,11 +218,11 @@
         </div> -->
         <h2 class="title">
             <span class="highlight">InfiniteGrid</span>
-            <a href="https://github.com/naver/egjs-infinitegrid/releases/tag/3.0.0-rc">
-                <span class="version">v3.0.0-rc</span>
+            <a href="https://github.com/naver/egjs-infinitegrid/releases/tag/3.2.4-snapshot">
+                <span class="version">v3.2.4-snapshot</span>
             </a>
         </h2>
-        <p class="intro">A module used to arrange card elements including content infinitely on variable layouts. With this module, you can implement 5 layout-pattern user interface composed of different card elements whose sizes vary. It guarantees performance by maintaining the number of DOMs the module is handling under any circumstance
+        <p class="intro">A module used to arrange card elements including content infinitely according to layout type. With this module, you can implement various layouts composed of different card elements whose sizes vary. It guarantees performance by maintaining the number of DOMs the module is handling under any circumstance
             <br/>
             <span class="hashtag">#infinite-scroll #masonry #justified #frame #square #pack #dom-recycle</span>
         </p>
@@ -277,14 +282,13 @@
 <h4 id="load-files-or-import-library">Load files or import library</h4>
 
 <h5 id="es5">ES5</h5>
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"//naver.github.io/egjs-infinitegrid/https://naver.github.io/egjs-infinitegrid/v3.0.0/dist/infinitegrid.pkgd.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"//naver.github.io/egjs-infinitegrid/release/latest/dist/infinitegrid.pkgd.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
 </code></pre></div></div>
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">InfiniteGrid</span> <span class="o">=</span> <span class="nx">eg</span><span class="p">.</span><span class="nx">InfiniteGrid</span><span class="p">;</span>
 <span class="kd">var</span> <span class="nx">JustifiedLayout</span> <span class="o">=</span> <span class="nx">InfiniteGrid</span><span class="p">.</span><span class="nx">JustifiedLayout</span><span class="p">;</span>
 </code></pre></div></div>
 <h5 id="es6">ES6+</h5>
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">InfiniteGrid</span> <span class="k">from</span> <span class="s2">"@egjs/infinitegrid"</span><span class="p">;</span>
-<span class="k">import</span> <span class="nx">JustifiedLayout</span> <span class="k">from</span> <span class="s2">"@egjs/infinitegrid/JustifiedLayout"</span><span class="p">;</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">InfiniteGrid</span><span class="p">,</span> <span class="p">{</span><span class="nx">JustifiedLayout</span><span class="p">}</span> <span class="k">from</span> <span class="s2">"@egjs/infinitegrid"</span><span class="p">;</span>
 </code></pre></div></div>
 
 <h3 id="initialize">Initialize</h3>

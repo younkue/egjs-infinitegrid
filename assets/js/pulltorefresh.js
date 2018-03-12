@@ -29,7 +29,7 @@ var ig = new eg.InfiniteGrid(contents, {
 	isOverflowScroll: true
 });
 ig.setLayout(eg.InfiniteGrid.GridLayout);
-container.insertAdjacentHTML("beforeend", `<div id="prepend"></div><div id="append"></div>`);
+container.insertAdjacentHTML("beforeend", '<div id="prepend"></div><div id="append"></div>');
 var prepend = document.getElementById("prepend");
 var append = document.getElementById("append");
 var axes = new eg.Axes({
@@ -53,8 +53,8 @@ ig.on({
 		axes.axis.scroll.range[1] = contents.scrollHeight - contents.clientHeight;
 		axes.setTo({ scroll: e.scrollPos }, 0);
 		if (isLoading) {
-			isLoading = false;	
-			container.classList.remove("pull");
+			isLoading = false;
+			container.className = container.className.replace(/pull/g, "");
 		}
 	},
 });
@@ -64,7 +64,7 @@ ig.append(groups[0], 0);
 var isLoading = true;
 
 function requestInsert(isAppend) {
-	container.classList.add("pull");
+	container.className = container.className + " pull";
 	setTimeout(function (e) {
 		var groupKeys = ig.getGroupKeys(true);
 		var groupKey = isAppend ? (groupKeys[groupKeys.length - 1] || 0) + 1 :

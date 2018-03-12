@@ -1,7 +1,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<div class="container" codepen="frame2">
-    <div class="started">Egjs</div>
+<div class="search" codepen="frame2">
+	<div class="header started">
+		<div class="header-container">
+			<img src="https://naver.github.io/egjs/img/logotype1_black.svg" alt="egjs logo" class="logo"/>
+		</div>
+	</div>
+	<div class="container">
+		<div class="contents"></div>
+
+	</div>
 </div>
+
 <link rel="stylesheet" href="../css/frame2.css" />
 <script src="../../release/latest/dist/infinitegrid.pkgd.js"></script>
 <script src="../../release/latest/dist/parallax.min.js"></script>
@@ -9,3 +18,18 @@
 <script src="../../common/js/codepen.js"></script>
 
 <script src="../js/frame2.js"></script>
+
+<link rel="stylesheet" href="../css/dat.gui.css" type="text/css"/>
+<script src="../js/dat.gui.js"></script>
+<script src="../js/dat.gui.load.js"></script>
+<script type="text/javascript">
+loadGUI({
+	itemSize: 0,
+	margin: 10,
+	change: function (text) {
+		ig._layout.options.margin = text.margin;
+		ig._layout.options.itemSize = text.itemSize;
+		ig.layout();
+	}
+});     
+</script>

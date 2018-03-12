@@ -1,15 +1,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<div class="contents" codepen="square">
-	<div class="container">
-		<h1>
-			EGJS PHOTO GALLERY
-		</h1>
-		<p class="description">
-			EGJS PHOTO GALLERY
-		</p>
-		<div class="gallery">
-
+<div class="search" codepen="square">
+	<div class="header">
+		<div class="header-container">
+			<img src="https://naver.github.io/egjs/img/logotype1_black.svg" alt="egjs logo" class="logo"/>
 		</div>
+	</div>
+	<div class="container">
+		<div class="gallery"></div>
+
 	</div>
 </div>
 
@@ -18,3 +16,18 @@
 <script src="../../common/js/jquery-2.2.4.js"></script>
 <script src="../../common/js/codepen.js"></script>
 <script src="../js/square.js"></script>
+
+<link rel="stylesheet" href="../css/dat.gui.css" type="text/css"/>
+<script src="../js/dat.gui.js"></script>
+<script src="../js/dat.gui.load.js"></script>
+<script type="text/javascript">
+loadGUI({
+	column: 4,
+	margin: 10,
+	change: function (text) {
+		ig._layout.options.column = text.column;
+		ig._layout.options.itemSize = text.itemSize;
+		ig.layout();
+	}
+});     
+</script>
