@@ -12,6 +12,8 @@ var isParallax = false;
 var _overflow = true;
 var _layout;
 var _horizontal;
+var _constant = false;
+var _equal = false;
 
 var grid = document.querySelector("#grid");
 $(grid).click(function (e) {
@@ -33,6 +35,8 @@ function createGrid() {
 		horizontal: _horizontal,
 		threshold: 50,
 		isOverflowScroll: _overflow,
+		isConstantSize: _constant,
+		isEqualSize: _equal,
 		// useRecycle: false,
 	});
 	ig.setLoadingBar("<div class=\"loading_bar\">LOADING</div>");
@@ -207,5 +211,23 @@ function overflow_false() {
 	$("#grid").attr("data-overflow", "false");
 	window[_layout]();
 }
-
-
+function enable_constant() {
+	_constant = true;
+	createGrid();
+	window[_layout]();
+}
+function disable_constant() {
+	_constant = false;
+	createGrid();
+	window[_layout]();
+}
+function enable_equal() {
+	_equal = true;
+	createGrid();
+	window[_layout]();
+}
+function disable_equal() {
+	_equal = false;
+	createGrid();
+	window[_layout]();
+}

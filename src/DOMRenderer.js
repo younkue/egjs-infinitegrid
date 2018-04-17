@@ -84,6 +84,7 @@ export default class DOMRenderer {
 		Object.assign(this.options = {
 			isOverflowScroll: false,
 			isEqualSize: false,
+			isConstantSize: false,
 			horizontal: false,
 		}, options);
 		this._size = {
@@ -108,20 +109,22 @@ export default class DOMRenderer {
 		Object.assign(this._size, status._size);
 	}
 	updateSize(items) {
+		const {isEqualSize, isConstantSize} = this.options;
+		const size = this._size;
+
 		return items.map(item => {
-			if (item.el) {
-				if (this.options.isEqualSize) {
-					this._size.item = this._size.item || {
-						width: innerWidth(item.el),
-						height: innerHeight(item.el),
-					};
-					item.size = Object.assign({}, this._size.item);
-				} else {
-					item.size = {
-						width: innerWidth(item.el),
-						height: innerHeight(item.el),
+			const el = item.el;
+
+			if (el) {
+				if (isEqualSize && !size.item) {
+					size.item = {
+						width: innerWidth(el),
+						height: innerHeight(el),
 					};
 				}
+				item.size = (isEqualSize && Object.assign(size.item)) ||
+					(isConstantSize && item.orgSize && Object.assign(item.orgSize)) ||
+					{width: innerWidth(el), height: innerHeight(el)};
 				if (!item.orgSize) {
 					item.orgSize = Object.assign({}, item.size);
 				}
@@ -215,17 +218,14 @@ export default class DOMRenderer {
 		}
 	}
 	resize() {
-		const horizontal = this.options.horizontal;
+		const {isConstantSize, horizontal} = this.options;
+		const size = this._size;
 		const view = this.view;
 		const isResize = this.isNeededResize();
 
-		if (isResize) {
-			this._size = {
-				viewport: this._calcSize(),
-				item: null,
-			};
-		}
-		this._size.view = horizontal ? innerWidth(view) : innerHeight(view);
+		isResize && (size.viewport = this._calcSize());
+		!isConstantSize && (size.item = null);
+		size.view = horizontal ? innerWidth(view) : innerHeight(view);
 		return isResize;
 	}
 	isNeededResize() {

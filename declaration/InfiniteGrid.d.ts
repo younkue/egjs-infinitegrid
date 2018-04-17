@@ -7,6 +7,7 @@ import {Item, ItemStatus} from "./ItemManager";
 export interface InfiniteGridOption {
 	itemSelector?: string;
 	isEqualSize?: boolean;
+	isConstantSize?: boolean;
 	isOverflowScroll?: boolean;
 	threshold?: number;
 	useRecycle?: boolean;

@@ -639,7 +639,133 @@ describe("InfiniteGrid Test", function() {
         });
       });
     });
-  });  
+  });
+  describe("isConstantSize option Test", function() {
+    beforeEach(() => {
+      this.el = sandbox();
+      this.el.innerHTML = "<div id='infinite'></div>";
+      this.inst = new InfiniteGrid("#infinite", {
+        isConstantSize: true,
+      });
+      this.inst.setLayout(GridLayout);
+    });
+    afterEach(() => {
+      if (this.inst) {
+        this.inst.destroy();
+        this.inst = null;
+      }
+      cleanup();
+    });
+    it(`should check isConstantSize option`, done => {
+      // Given
+      // When
+      insert(this.inst, true, () => {
+        const datas = this.inst._items._data;
+
+        datas.forEach(({items}) => {
+          items.forEach(({el}) => {
+            el.style.width = "10%";
+          });
+        });
+        this.inst._renderer._size.viewport = 0;
+        this.inst.layout();
+
+        datas.forEach(({items}) => {
+          items.forEach(({size, orgSize}) => {
+            expect(size).to.be.deep.equals(orgSize);
+          });
+        });
+        expect(datas[0].outlines.start.every(p => p === datas[0].outlines.start[0])).to.be.true;
+        done();
+      }, 5, 4);
+    });
+    it(`should check isConstantSize option in cursor`, done => {
+      this.inst.layout(true);
+      insert(this.inst, true, () => {
+        const datas = this.inst._items._data;
+        const rects = datas.map(data => data.items.map(item => item.rect.top));
+        this.inst.on("layoutComplete", () => {
+          const rects2 = datas.map(data => data.items.map(item =>item.rect.top));
+
+          if (!DEFENSE_BROWSER) {
+            expect(rects).to.be.deep.equals(rects2.map(data => data.map(top => top - rects2[0][0])));
+          }
+          expect(datas[0].outlines.start.every(p => p === datas[0].outlines.start[0])).to.be.true;
+          done();
+        });
+        this.inst._infinite.setCursor("start", 1);
+        this.inst._renderer._size.viewport = 0;
+        this.inst._watcher._onResize();
+        
+      }, 5, 4);
+    });
+    it(`should check resize width and isConstantSize option in cursor`, done => {
+      this.inst.layout(true);
+      insert(this.inst, true, () => {
+        const datas = this.inst._items._data;
+        const size = datas.map(data => data.items.map(item => Object.assign(item.size)));
+        this.inst.on("layoutComplete", () => {
+          const size2 = datas.map(data => data.items.map(item => Object.assign(item.size)));
+
+          
+          expect(size).to.be.deep.equals(size2);
+          
+          expect(datas[0].outlines.start.length).to.be.ok;
+          expect(isNaN(datas[0].outlines.start[0])).to.be.false;
+          expect(isFinite(datas[0].outlines.start[0])).to.be.true;
+          expect(datas[0].outlines.start.every(p => p === datas[0].outlines.start[0])).to.be.true;
+          done();
+        });
+        const container = this.el.querySelector("#infinite");
+        const width = innerWidth(container);
+        container.style.width = `${width * 2}px`;
+        datas[0].outlines.start = [0];
+        this.inst._renderer._size.viewport = width * 2;
+        this.inst._layout.setSize(width * 2);
+        this.inst.layout(true);
+      }, 5, 4);
+    });
+    it(`should check isEqualSize and isConstantSize option`, done => {
+      // Given
+      this.inst.options.isEqualSize = true;
+      this.inst._renderer.options.isEqualSize = true;
+      // When
+      insert(this.inst, true, () => {
+        const datas = this.inst._items._data;
+
+        const standardSize = datas[0].items[0].size;
+        datas.forEach(({items}) => {
+          items.forEach(({size}) => {
+            expect(size).to.deep.equals(standardSize);
+          });
+        })
+        done();
+      }, 5, 4);
+    });
+    it(`should check resize and isEqualSize and isConstantSize option`, done => {
+      // Given
+      this.inst.options.isEqualSize = true;
+      this.inst._renderer.options.isEqualSize = true;
+      // When
+      insert(this.inst, true, () => {
+        const datas = this.inst._items._data;
+        const standardSize = Object.assign(datas[0].items[0].size);
+
+        this.inst.on("layoutComplete", () => {
+          datas.forEach(({items}) => {
+            items.forEach(({size}) => {
+              expect(size).to.deep.equals(standardSize);
+            });
+          })
+          done();
+        });
+
+        this.inst._infinite.setCursor("start", 1);
+        this.inst._renderer._size.viewport = 0;
+        this.inst._watcher._onResize();
+      }, 5, 4);
+    });
+  });
   describe("isEqualSize option Test", function() {
     beforeEach(() => {
       this.el = sandbox();

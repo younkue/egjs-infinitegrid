@@ -93,6 +93,7 @@ class InfiniteGrid extends Component {
 	 * @param {Boolean} [options.isOverflowScroll=false] Indicates whether overflow:scroll is applied<ko>overflow:scroll 적용여부를 결정한다.</ko>
 	 * @param {Boolean} [options.horizontal=false] Direction of the scroll movement (true: horizontal, false: vertical) <ko>스크롤 이동 방향 (true 가로방향, false 세로방향)</ko>
 	 * @param {Boolean} [options.isEqualSize=false] Indicates whether sizes of all card elements are equal to one another. If sizes of card elements to be arranged are all equal and this option is set to "true", the performance of layout arrangement can be improved. <ko>카드 엘리먼트의 크기가 동일한지 여부. 배치될 카드 엘리먼트의 크기가 모두 동일할 때 이 옵션을 'true'로 설정하면 레이아웃 배치 성능을 높일 수 있다</ko>
+	 * @param {Boolean} [options.isConstantSize=false] Indicates whether sizes of all card elements does not change. <ko>카드 엘리먼트의 크기가 변하지 않는지 여부.</ko>
 	 * @param {Number} [options.threshold=100] The threshold size of an event area where card elements are added to a layout.<ko>레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.</ko>
 	 * @param {String} [options.attributePrefix="data-"] The prefix to use element's data attribute.<ko>엘리먼트의 데이타 속성에 사용할 접두사.</ko>
 	 */
@@ -112,12 +113,20 @@ class InfiniteGrid extends Component {
 		this._reset();
 		this._loadingBar = {};
 
-		const {isOverflowScroll, isEqualSize, horizontal, threshold, useRecycle} = this.options;
+		const {
+			isOverflowScroll,
+			isConstantSize,
+			isEqualSize,
+			horizontal,
+			threshold,
+			useRecycle,
+		} = this.options;
 
 		this._items = new ItemManager();
 		this._renderer = new DOMRenderer(element, {
 			isOverflowScroll,
 			isEqualSize,
+			isConstantSize,
 			horizontal,
 		});
 		this._watcher = new Watcher(
@@ -300,13 +309,14 @@ class InfiniteGrid extends Component {
 
 		const infinite = this._infinite;
 		const items = this.getItems();
-		const isEqualSize = this.options.isEqualSize;
+		const {isEqualSize, isConstantSize, horizontal} = this.options;
+		const isLayoutAll = isEqualSize || isConstantSize;
 
 		if (!items.length) {
 			return this;
 		}
 		if (isRelayout) { // remove cache
-			if (isEqualSize) {
+			if (isLayoutAll) {
 				renderer.updateSize([items[0]]);
 				data = itemManager.get();
 				outline = itemManager.getOutline(0, "start");
@@ -326,15 +336,18 @@ class InfiniteGrid extends Component {
 		if (!data.length) {
 			return this;
 		}
+		const startCursor = infinite.getCursor("start");
+		const endCursor = infinite.getCursor("end");
+		const beforeLayoutOutline = Math.min(...infinite.getEdgeOutline("start"));
+
 		this._layout.layout(data, outline);
+		const afterLayoutOutline = Math.min(...infinite.getEdgeOutline("start"));
 
 		if (isRelayout) {
-			if (isEqualSize) {
+			if (isLayoutAll) {
+				itemManager.fit(afterLayoutOutline - beforeLayoutOutline, horizontal);
 				this._fit();
 			} else {
-				const startCursor = infinite.getCursor("start");
-				const endCursor = infinite.getCursor("end");
-
 				itemManager._data.forEach((group, cursor) => {
 					if (startCursor <= cursor && cursor <= endCursor) {
 						return;
@@ -642,9 +655,9 @@ class InfiniteGrid extends Component {
 		const startCursor = infinite.getCursor("start");
 		const endCursor = infinite.getCursor("end");
 		const isInCursor = startCursor <= index && index <= endCursor;
-		const {useRecycle, isEqualSize, horizontal} = this.options;
+		const {useRecycle, isEqualSize, isConstantSize, horizontal} = this.options;
 
-		if (isInCursor || !useRecycle || isEqualSize || !isResize) {
+		if (isInCursor || !useRecycle || isEqualSize || isConstantSize || !isResize) {
 			let pos = item && item.rect[horizontal ? "left" : "top"];
 
 			if (typeof pos === "undefined") {
@@ -863,7 +876,7 @@ ig.on("imageError", e => {
 	}
 	_postImageLoadedEnd(items, isAppend, removeTarget, replaceTarget) {
 		const scrollPos = this._watcher.getScrollPos();
-		const {useRecycle, isEqualSize, attributePrefix} = this.options;
+		const {useRecycle, isEqualSize, isConstantSize, attributePrefix} = this.options;
 
 		if (!removeTarget.length && !replaceTarget.length) {
 			if (!this.isProcessing() && useRecycle) {
@@ -876,7 +889,7 @@ ig.on("imageError", e => {
 		removeTarget.forEach(element => {
 			this.remove(element, false);
 		});
-		if (isEqualSize) {
+		if (isEqualSize || isConstantSize) {
 			if (removeTarget.length > 0) {
 				this.layout(false);
 			} else if (!this.isProcessing() && useRecycle) {
@@ -920,23 +933,25 @@ ig.on("imageError", e => {
 		isTrusted, moveItem = -2}) {
 		this._process(PROCESSING);
 		const method = isAppend ? "append" : "prepend";
+		const renderer = this._renderer;
 
 		fromCache && DOMRenderer.createElements(items);
-		this._renderer[method](items);
+		renderer[method](items);
 
 		// check image sizes after elements are attated on DOM
-		const type = this.options.isEqualSize && this._renderer._size.item ? CHECK_ONLY_ERROR : CHECK_ALL;
-		const prefix = this.options.attributePrefix;
+		const {isEqualSize, isConstantSize, attributePrefix} = this.options;
+		const type = (isEqualSize || isConstantSize) &&
+			renderer._size.item ? CHECK_ONLY_ERROR : CHECK_ALL;
 		const replaceTarget = [];
 		const removeTarget = [];
 		let layouted;
 
 		ImageLoaded.check(items.map(item => item.el), {
-			prefix,
+			prefix: attributePrefix,
 			type,
 			complete: () => {
 				layouted = this._layout[method](
-					this._renderer.updateSize(items),
+					renderer.updateSize(items),
 					outline
 				);
 				// no recycle
