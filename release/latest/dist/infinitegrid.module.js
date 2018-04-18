@@ -326,7 +326,7 @@ function isUndefined(target) {
 
 
 exports.__esModule = true;
-exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
+exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.TRANSITION_DELAY = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
 
 var _browser = __webpack_require__(2);
 
@@ -368,7 +368,7 @@ var MULTI = exports.MULTI = true;
 var SINGLE = exports.SINGLE = false;
 var DUMMY_POSITION = exports.DUMMY_POSITION = -100000;
 var GROUPKEY_ATT = exports.GROUPKEY_ATT = "data-groupkey";
-
+var TRANSITION_DELAY = exports.TRANSITION_DELAY = 200;
 var DEFAULT_OPTIONS = exports.DEFAULT_OPTIONS = {
 	horizontal: false,
 	margin: 0
@@ -773,6 +773,27 @@ var _utils = __webpack_require__(0);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var _ref = function () {
+	var properties = {
+		transitionend: "",
+		webkitTransitionEnd: "-webkit-",
+		oTransitionEnd: "-o-",
+		mozTransitionEnd: "-moz-"
+	};
+
+	for (var property in properties) {
+		var prefix = properties[property];
+
+		if ("on" + property.toLowerCase() in window) {
+			return [prefix + "transform", prefix + "transition", property];
+		}
+	}
+	return [];
+}(),
+    TRANSFORM = _ref[0],
+    TRANSITION = _ref[1],
+    TRANSITION_END = _ref[2];
+
 function _defense(element) {
 	var container = document.createElement("div");
 
@@ -790,26 +811,59 @@ function _defense(element) {
 	element.appendChild(container);
 	return container;
 }
+function render(properteis, rect, styles) {
+	properteis.forEach(function (p) {
+		p in rect && (styles[p] = rect[p] + "px");
+	});
+}
+function setTransition(styles, transitionDuration, x, y) {
+	styles[TRANSITION + "-property"] = transitionDuration ? TRANSFORM + ",width,height" : "";
+	styles[TRANSITION + "-duration"] = transitionDuration ? transitionDuration + "s" : "";
+	styles[TRANSITION + "-delay"] = transitionDuration ? "0s" : "";
+	styles[TRANSITION + "-timing-function"] = transitionDuration ? "ease" : "";
+	styles[TRANSFORM] = transitionDuration ? "translate(" + x + "px," + y + "px)" : "";
+}
 
 var DOMRenderer = function () {
-	DOMRenderer.renderItem = function renderItem(item, styles) {
-		var el = item.el;
+	DOMRenderer.renderItem = function renderItem(item, rect, transitionDuration) {
+		if (!item.el) {
+			return;
+		}
+		var el = item.el,
+		    renderRect = item.renderRect;
 
-		if (el) {
-			var elStyle = el.style;
+		var styles = el.style;
 
-			// for debugging
-			el.setAttribute(_consts.GROUPKEY_ATT, item.groupKey);
-			elStyle.position = "absolute";
-			["left", "top", "width", "height"].forEach(function (p) {
-				p in styles && (elStyle[p] = styles[p] + "px");
-			});
+		// for debugging
+		el.setAttribute(_consts.GROUPKEY_ATT, item.groupKey);
+		styles.position = "absolute";
+		render(["width", "height"], rect, styles);
+		if (transitionDuration && TRANSITION && renderRect) {
+			setTransition(styles, transitionDuration, rect.left - renderRect.left, rect.top - renderRect.top);
+			if (item.transition) {
+				return;
+			}
+			item.transition = function () {
+				var itemRect = item.rect;
+
+				setTransition(styles);
+				render(["left", "top"], itemRect, styles);
+				item.renderRect = itemRect;
+				(0, _utils.removeEvent)(el, TRANSITION_END, item.transition);
+				item.transition = 0;
+			};
+			(0, _utils.addEvent)(el, TRANSITION_END, item.transition);
+		} else {
+			render(["left", "top"], rect, styles);
+			item.renderRect = rect;
 		}
 	};
 
 	DOMRenderer.renderItems = function renderItems(items) {
+		var transitionDuration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
 		items.forEach(function (item) {
-			DOMRenderer.renderItem(item, item.rect);
+			DOMRenderer.renderItem(item, item.rect, transitionDuration);
 		});
 	};
 
@@ -818,6 +872,7 @@ var DOMRenderer = function () {
 			if (item.el) {
 				DOMRenderer.removeElement(item.el);
 				item.el = null;
+				item.rendRect = null;
 			}
 		});
 	};
@@ -835,8 +890,8 @@ var DOMRenderer = function () {
 		if (!items.length || items[0].el) {
 			return items;
 		}
-		var elements = (0, _utils.$)(items.map(function (_ref) {
-			var content = _ref.content;
+		var elements = (0, _utils.$)(items.map(function (_ref2) {
+			var content = _ref2.content;
 			return content.replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, "");
 		}).join(""), _consts.MULTI);
 
@@ -2180,6 +2235,7 @@ var InfiniteGrid = function (_Component) {
   * @param {Boolean} [options.isOverflowScroll=false] Indicates whether overflow:scroll is applied<ko>overflow:scroll 적용여부를 결정한다.</ko>
   * @param {Boolean} [options.horizontal=false] Direction of the scroll movement (true: horizontal, false: vertical) <ko>스크롤 이동 방향 (true 가로방향, false 세로방향)</ko>
   * @param {Boolean} [options.isEqualSize=false] Indicates whether sizes of all card elements are equal to one another. If sizes of card elements to be arranged are all equal and this option is set to "true", the performance of layout arrangement can be improved. <ko>카드 엘리먼트의 크기가 동일한지 여부. 배치될 카드 엘리먼트의 크기가 모두 동일할 때 이 옵션을 'true'로 설정하면 레이아웃 배치 성능을 높일 수 있다</ko>
+  * @param {Number} [options.transitionDruation=0] Indicates how many seconds a transition effect takes to complete. <ko>트랜지션 효과를 완료하는데 걸리는 시간을 나타낸다.</ko>
   * @param {Boolean} [options.isConstantSize=false] Indicates whether sizes of all card elements does not change. <ko>카드 엘리먼트의 크기가 변하지 않는지 여부.</ko>
   * @param {Number} [options.threshold=100] The threshold size of an event area where card elements are added to a layout.<ko>레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.</ko>
   * @param {String} [options.attributePrefix="data-"] The prefix to use element's data attribute.<ko>엘리먼트의 데이타 속성에 사용할 접두사.</ko>
@@ -2196,7 +2252,8 @@ var InfiniteGrid = function (_Component) {
 			isEqualSize: false,
 			useRecycle: true,
 			horizontal: false,
-			attributePrefix: "data-"
+			attributePrefix: "data-",
+			transitionDuration: 0
 		}, options);
 		_this.options.useFit = !_consts.DEFENSE_BROWSER;
 		_consts.IS_ANDROID2 && (_this.options.isOverflowScroll = false);
@@ -2432,6 +2489,7 @@ var InfiniteGrid = function (_Component) {
 		var infinite = this._infinite;
 		var items = this.getItems();
 		var _options = this.options,
+		    transitionDuration = _options.transitionDuration,
 		    isEqualSize = _options.isEqualSize,
 		    isConstantSize = _options.isConstantSize,
 		    horizontal = _options.horizontal;
@@ -2475,26 +2533,27 @@ var InfiniteGrid = function (_Component) {
 				itemManager.fit(afterLayoutOutline - beforeLayoutOutline, horizontal);
 				this._fit();
 			} else {
-				itemManager._data.forEach(function (group, cursor) {
+				itemManager._data.forEach(function (_ref, cursor) {
+					var outlines = _ref.outlines;
+
 					if (startCursor <= cursor && cursor <= endCursor) {
 						return;
 					}
-					group.outlines.start = [];
-					group.outlines.end = [];
+					outlines.start = [];
+					outlines.end = [];
 				});
 			}
 		}
+		_DOMRenderer2["default"].renderItems(items, transitionDuration);
 		this._onLayoutComplete({
 			items: items,
 			isAppend: _consts.APPEND,
 			fromCache: _consts.CACHE,
-			isTrusted: _consts.NO_TRUSTED,
+			isTrusted: false,
 			useRecycle: false,
 			isLayout: true
 		});
-		_DOMRenderer2["default"].renderItems(items);
 		isRelayout && this._watcher.setScrollPos();
-
 		return this;
 	};
 	/**
@@ -2687,15 +2746,15 @@ var InfiniteGrid = function (_Component) {
 			fromCache: _consts.NO_CACHE,
 			items: items,
 			isAppend: isAppend,
-			isTrusted: _consts.NO_TRUSTED
+			isTrusted: false
 		});
 	};
 	// add items, and remove items for recycling
 
 
-	InfiniteGrid.prototype._recycle = function _recycle(_ref) {
-		var start = _ref.start,
-		    end = _ref.end;
+	InfiniteGrid.prototype._recycle = function _recycle(_ref2) {
+		var start = _ref2.start,
+		    end = _ref2.end;
 
 		if (!this.options.useRecycle) {
 			return;
@@ -2880,7 +2939,7 @@ var InfiniteGrid = function (_Component) {
 					isAppend: isAppend,
 					outline: outlines[isAppend ? "start" : "end"],
 					cache: data,
-					isTrusted: _consts.NO_TRUSTED,
+					isTrusted: false,
 					moveItem: itemIndex
 				});
 				return this;
@@ -2905,7 +2964,7 @@ var InfiniteGrid = function (_Component) {
 				isAppend: _isAppend,
 				fromCache: _consts.CACHE,
 				items: data.items,
-				isTrusted: _consts.TRUSTED,
+				isTrusted: false,
 				moveItem: itemIndex
 			});
 		}
@@ -2920,15 +2979,15 @@ var InfiniteGrid = function (_Component) {
 		this._watcher.scrollTo(this._watcher.getContainerOffset() + pos);
 	};
 
-	InfiniteGrid.prototype._postLayoutComplete = function _postLayoutComplete(_ref2) {
-		var layouted = _ref2.layouted,
-		    isAppend = _ref2.isAppend,
-		    isTrusted = _ref2.isTrusted,
-		    fromCache = _ref2.fromCache,
-		    _ref2$moveItem = _ref2.moveItem,
-		    moveItem = _ref2$moveItem === undefined ? -2 : _ref2$moveItem,
-		    _ref2$useRecycle = _ref2.useRecycle,
-		    useRecycle = _ref2$useRecycle === undefined ? this.options.useRecycle : _ref2$useRecycle;
+	InfiniteGrid.prototype._postLayoutComplete = function _postLayoutComplete(_ref3) {
+		var layouted = _ref3.layouted,
+		    isAppend = _ref3.isAppend,
+		    isTrusted = _ref3.isTrusted,
+		    fromCache = _ref3.fromCache,
+		    _ref3$moveItem = _ref3.moveItem,
+		    moveItem = _ref3$moveItem === undefined ? -2 : _ref3$moveItem,
+		    _ref3$useRecycle = _ref3.useRecycle,
+		    useRecycle = _ref3$useRecycle === undefined ? this.options.useRecycle : _ref3$useRecycle;
 
 		var pos = Math.max.apply(Math, layouted.outlines.start);
 
@@ -3123,15 +3182,15 @@ var InfiniteGrid = function (_Component) {
 		});
 	};
 
-	InfiniteGrid.prototype._postCache = function _postCache(_ref3) {
-		var cache = _ref3.cache,
-		    isAppend = _ref3.isAppend,
-		    _ref3$isTrusted = _ref3.isTrusted,
-		    isTrusted = _ref3$isTrusted === undefined ? true : _ref3$isTrusted,
-		    _ref3$outline = _ref3.outline,
-		    outline = _ref3$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref3$outline,
-		    _ref3$moveItem = _ref3.moveItem,
-		    moveItem = _ref3$moveItem === undefined ? -2 : _ref3$moveItem;
+	InfiniteGrid.prototype._postCache = function _postCache(_ref4) {
+		var cache = _ref4.cache,
+		    isAppend = _ref4.isAppend,
+		    _ref4$isTrusted = _ref4.isTrusted,
+		    isTrusted = _ref4$isTrusted === undefined ? true : _ref4$isTrusted,
+		    _ref4$outline = _ref4.outline,
+		    outline = _ref4$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref4$outline,
+		    _ref4$moveItem = _ref4.moveItem,
+		    moveItem = _ref4$moveItem === undefined ? -2 : _ref4$moveItem;
 
 		var cacheOutline = cache.outlines[isAppend ? "start" : "end"];
 
@@ -3155,17 +3214,17 @@ var InfiniteGrid = function (_Component) {
 		});
 	};
 
-	InfiniteGrid.prototype._postLayout = function _postLayout(_ref4) {
+	InfiniteGrid.prototype._postLayout = function _postLayout(_ref5) {
 		var _this3 = this;
 
-		var fromCache = _ref4.fromCache,
-		    items = _ref4.items,
-		    isAppend = _ref4.isAppend,
-		    _ref4$outline = _ref4.outline,
-		    outline = _ref4$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref4$outline,
-		    isTrusted = _ref4.isTrusted,
-		    _ref4$moveItem = _ref4.moveItem,
-		    moveItem = _ref4$moveItem === undefined ? -2 : _ref4$moveItem;
+		var fromCache = _ref5.fromCache,
+		    items = _ref5.items,
+		    isAppend = _ref5.isAppend,
+		    _ref5$outline = _ref5.outline,
+		    outline = _ref5$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref5$outline,
+		    isTrusted = _ref5.isTrusted,
+		    _ref5$moveItem = _ref5.moveItem,
+		    moveItem = _ref5$moveItem === undefined ? -2 : _ref5$moveItem;
 
 		this._process(_consts.PROCESSING);
 		var method = isAppend ? "append" : "prepend";
@@ -3195,9 +3254,9 @@ var InfiniteGrid = function (_Component) {
 				// no recycle
 				_this3._postImageLoaded(fromCache, layouted, items, isAppend, isTrusted, moveItem);
 			},
-			error: function error(_ref5) {
-				var target = _ref5.target,
-				    itemIndex = _ref5.itemIndex;
+			error: function error(_ref6) {
+				var target = _ref6.target,
+				    itemIndex = _ref6.itemIndex;
 
 				var item = layouted && layouted.items[itemIndex] || items[itemIndex];
 
@@ -3213,8 +3272,8 @@ var InfiniteGrid = function (_Component) {
 	// called by visible
 
 
-	InfiniteGrid.prototype._requestAppend = function _requestAppend(_ref6) {
-		var cache = _ref6.cache;
+	InfiniteGrid.prototype._requestAppend = function _requestAppend(_ref7) {
+		var cache = _ref7.cache;
 
 		if (this._isProcessing()) {
 			return;
@@ -3231,7 +3290,7 @@ var InfiniteGrid = function (_Component) {
     * @param {Boolean} param.isTrusted Returns true if an event was generated by the user action, or false if it was caused by a script or API call <ko>사용자의 액션에 의해 이벤트가 발생하였으면 true, 스크립트나 API호출에 의해 발생하였을 경우에는 false를 반환한다.</ko>
     */
 			this.trigger("append", {
-				isTrusted: _consts.TRUSTED,
+				isTrusted: true,
 				groupKey: this.getGroupKeys().pop()
 			});
 		}
@@ -3239,10 +3298,10 @@ var InfiniteGrid = function (_Component) {
 	// called by visible
 
 
-	InfiniteGrid.prototype._requestPrepend = function _requestPrepend(_ref7) {
-		var cache = _ref7.cache,
-		    _ref7$fit = _ref7.fit,
-		    fit = _ref7$fit === undefined ? true : _ref7$fit;
+	InfiniteGrid.prototype._requestPrepend = function _requestPrepend(_ref8) {
+		var cache = _ref8.cache,
+		    _ref8$fit = _ref8.fit,
+		    fit = _ref8$fit === undefined ? true : _ref8$fit;
 
 		if (fit) {
 			this._fit();
@@ -3262,7 +3321,7 @@ var InfiniteGrid = function (_Component) {
     * @param {Boolean} param.isTrusted Returns true if an event was generated by the user action, or false if it was caused by a script or API call <ko>사용자의 액션에 의해 이벤트가 발생하였으면 true, 스크립트나 API호출에 의해 발생하였을 경우에는 false를 반환한다.</ko>
     */
 			this.trigger("prepend", {
-				isTrusted: _consts.TRUSTED,
+				isTrusted: true,
 				groupKey: this.getGroupKeys().shift()
 			});
 		}
@@ -3272,11 +3331,11 @@ var InfiniteGrid = function (_Component) {
 		this.layout(true);
 	};
 
-	InfiniteGrid.prototype._onCheck = function _onCheck(_ref8) {
-		var isForward = _ref8.isForward,
-		    scrollPos = _ref8.scrollPos,
-		    horizontal = _ref8.horizontal,
-		    orgScrollPos = _ref8.orgScrollPos;
+	InfiniteGrid.prototype._onCheck = function _onCheck(_ref9) {
+		var isForward = _ref9.isForward,
+		    scrollPos = _ref9.scrollPos,
+		    horizontal = _ref9.horizontal,
+		    orgScrollPos = _ref9.orgScrollPos;
 
 		/**
    * This event is fired when the user scrolls.
@@ -3298,17 +3357,17 @@ var InfiniteGrid = function (_Component) {
 		this._infinite.scroll(scrollPos, isForward);
 	};
 
-	InfiniteGrid.prototype._onLayoutComplete = function _onLayoutComplete(_ref9) {
-		var items = _ref9.items,
-		    isAppend = _ref9.isAppend,
-		    _ref9$isTrusted = _ref9.isTrusted,
-		    isTrusted = _ref9$isTrusted === undefined ? false : _ref9$isTrusted,
-		    _ref9$useRecycle = _ref9.useRecycle,
-		    useRecycle = _ref9$useRecycle === undefined ? this.options.useRecycle : _ref9$useRecycle,
-		    _ref9$fromCache = _ref9.fromCache,
-		    fromCache = _ref9$fromCache === undefined ? false : _ref9$fromCache,
-		    _ref9$isLayout = _ref9.isLayout,
-		    isLayout = _ref9$isLayout === undefined ? false : _ref9$isLayout;
+	InfiniteGrid.prototype._onLayoutComplete = function _onLayoutComplete(_ref10) {
+		var items = _ref10.items,
+		    isAppend = _ref10.isAppend,
+		    _ref10$isTrusted = _ref10.isTrusted,
+		    isTrusted = _ref10$isTrusted === undefined ? false : _ref10$isTrusted,
+		    _ref10$useRecycle = _ref10.useRecycle,
+		    useRecycle = _ref10$useRecycle === undefined ? this.options.useRecycle : _ref10$useRecycle,
+		    _ref10$fromCache = _ref10.fromCache,
+		    fromCache = _ref10$fromCache === undefined ? false : _ref10$fromCache,
+		    _ref10$isLayout = _ref10.isLayout,
+		    isLayout = _ref10$isLayout === undefined ? false : _ref10$isLayout;
 
 		var viewSize = this._renderer.getViewSize();
 
@@ -3319,11 +3378,12 @@ var InfiniteGrid = function (_Component) {
 		}
 
 		var watcher = this._watcher;
+		var infinite = this._infinite;
 		var scrollPos = watcher.getScrollPos();
 
 		// recycle after _fit beacause prepend and append are occured simultaneously by scroll.
 		if (!isLayout && useRecycle && !this._isLoading()) {
-			this._infinite.recycle(scrollPos, isAppend);
+			infinite.recycle(scrollPos, isAppend);
 		}
 
 		var size = this._getEdgeValue("end");
@@ -3340,7 +3400,8 @@ var InfiniteGrid = function (_Component) {
    * @param {Object} param The object of data to be sent to an event <ko>이벤트에 전달되는 데이터 객체</ko>
    * @param {Array} param.target Rearranged card elements<ko>재배치된 카드 엘리먼트들</ko>
    * @param {Boolean} param.isAppend Checks whether the append() method is used to add a card element. It returns true even though the layoutComplete event is fired after the layout() method is called. <ko>카드 엘리먼트가 append() 메서드로 추가됐는지 확인한다. layout() 메서드가 호출된 후 layoutComplete 이벤트가 발생해도 'true'를 반환한다.</ko>
-   * @param {Boolean} param.isScroll Checks whether scrolling has occurred after the append(), prepend(), ..., etc method is called <ko>append, prend 등 호출 후 스크롤이 생겼는지 확인한다.</ko>
+   * @param {Boolean} param.isLayout Checks whether reordering occurs by calling the layout() method or resizing. <ko> layout() 메소드 호출 또는 리사이징에 의해 재정렬이 일어났는지 확인한다.</ko>
+   * @param {Boolean} param.isScroll Checks whether scrolling has occurred after the append(), prepend(), ..., etc method is called
    * @param {Number} param.scrollPos Current scroll position value relative to the infiniteGrid container element. <ko>infiniteGrid 컨테이너 엘리먼트 기준의 현재 스크롤 위치값</ko>
    * @param {Number} param.orgScrollPos Current position of the scroll <ko>현재 스크롤 위치값</ko>
    * @param {Number} param.size The size of container element <ko>컨테이너 엘리먼트의 크기</ko>
@@ -3350,12 +3411,24 @@ var InfiniteGrid = function (_Component) {
 			target: items.concat(),
 			isAppend: isAppend,
 			isTrusted: isTrusted,
+			isLayout: isLayout,
 			isScroll: viewSize < watcher.getContainerOffset() + size,
 			scrollPos: scrollPos,
 			orgScrollPos: watcher.getOrgScrollPos(),
 			size: size
 		});
-		this._infinite.scroll(scrollPos, isAppend);
+
+		var transitionItem = items[isAppend ? items.length - 1 : 0];
+
+		if (transitionItem && transitionItem.transition) {
+			transitionItem.timer && clearTimeout(transitionItem.timer);
+			transitionItem.timer = setTimeout(function () {
+				transitionItem.timer = 0;
+				infinite.scroll(watcher.getScrollPos(), isAppend);
+			}, this.options.transitionDuration * 1000 + _consts.TRANSITION_DELAY);
+		} else {
+			infinite.scroll(scrollPos, isAppend);
+		}
 	};
 
 	InfiniteGrid.prototype._reset = function _reset() {
