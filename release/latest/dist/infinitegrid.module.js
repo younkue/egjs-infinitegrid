@@ -820,7 +820,6 @@ function setTransition(styles, transitionDuration, x, y) {
 	styles[TRANSITION + "-property"] = transitionDuration ? TRANSFORM + ",width,height" : "";
 	styles[TRANSITION + "-duration"] = transitionDuration ? transitionDuration + "s" : "";
 	styles[TRANSITION + "-delay"] = transitionDuration ? "0s" : "";
-	styles[TRANSITION + "-timing-function"] = transitionDuration ? "ease" : "";
 	styles[TRANSFORM] = transitionDuration ? "translate(" + x + "px," + y + "px)" : "";
 }
 
