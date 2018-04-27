@@ -111,6 +111,8 @@ exports.scrollBy = scrollBy;
 exports.getStyles = getStyles;
 exports.innerWidth = innerWidth;
 exports.innerHeight = innerHeight;
+exports.outerWidth = outerWidth;
+exports.outerHeight = outerHeight;
 exports.getStyleNames = getStyleNames;
 exports.assignOptions = assignOptions;
 exports.toZeroArray = toZeroArray;
@@ -241,9 +243,9 @@ function scrollBy(el, x, y) {
 	}
 }
 function getStyles(el) {
-	return _consts.SUPPORT_COMPUTEDSTYLE ? _browser.window.getComputedStyle(el) : el.currentStyle;
+	return (_consts.SUPPORT_COMPUTEDSTYLE ? _browser.window.getComputedStyle(el) : el.currentStyle) || {};
 }
-function _getSize(el, name) {
+function _getSize(el, name, isOffset) {
 	if (el === _browser.window) {
 		// WINDOW
 		return _browser.window["inner" + name] || _browser.document.body["client" + name];
@@ -254,17 +256,22 @@ function _getSize(el, name) {
 		return Math.max(el.body["scroll" + name], doc["scroll" + name], el.body["offset" + name], doc["offset" + name], doc["client" + name]);
 	} else {
 		// NODE
-		var style = getStyles(el);
-		var value = style[name.toLowerCase()];
+		var size = el["" + (isOffset ? "offset" : "client") + name] || el["" + (isOffset ? "client" : "offset") + name];
 
-		return parseFloat(el["offset" + name] || value || 0);
+		return parseFloat(size || getStyles(el)[name.toLowerCase()]) || 0;
 	}
 }
 function innerWidth(el) {
-	return _getSize(el, "Width");
+	return _getSize(el, "Width", false);
 }
 function innerHeight(el) {
-	return _getSize(el, "Height");
+	return _getSize(el, "Height", false);
+}
+function outerWidth(el) {
+	return _getSize(el, "Width", true);
+}
+function outerHeight(el) {
+	return _getSize(el, "Height", true);
 }
 var STYLE = exports.STYLE = {
 	vertical: {
@@ -889,14 +896,14 @@ var DOMRenderer = function () {
 			if (item.el) {
 				if (_this.options.isEqualSize) {
 					_this._size.item = _this._size.item || {
-						width: (0, _utils.innerWidth)(item.el),
-						height: (0, _utils.innerHeight)(item.el)
+						width: (0, _utils.outerWidth)(item.el),
+						height: (0, _utils.outerHeight)(item.el)
 					};
 					item.size = _extends({}, _this._size.item);
 				} else {
 					item.size = {
-						width: (0, _utils.innerWidth)(item.el),
-						height: (0, _utils.innerHeight)(item.el)
+						width: (0, _utils.outerWidth)(item.el),
+						height: (0, _utils.outerHeight)(item.el)
 					};
 				}
 				if (!item.orgSize) {
@@ -2772,7 +2779,7 @@ var InfiniteGrid = function (_Component) {
 		if (!el) {
 			return;
 		}
-		this._status.loadingSize = this.options.horizontal ? (0, _utils.innerWidth)(el) : (0, _utils.innerHeight)(el);
+		this._status.loadingSize = this.options.horizontal ? (0, _utils.outerWidth)(el) : (0, _utils.outerHeight)(el);
 		var pos = isAppend ? this._getEdgeValue("end") : this._getEdgeValue("start") - this._status.loadingSize;
 		var style = _extends((_extends2 = {
 			position: "absolute"
