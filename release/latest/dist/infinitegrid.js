@@ -253,7 +253,7 @@ function _getSize(el, name) {
 		var style = getStyles(el);
 		var value = style[name.toLowerCase()];
 
-		return parseFloat(/auto|%/.test(value) ? el["offset" + name] : style[name.toLowerCase()]);
+		return parseFloat(el["offset" + name] || value || 0);
 	}
 }
 function innerWidth(el) {
@@ -326,7 +326,7 @@ function isUndefined(target) {
 
 
 exports.__esModule = true;
-exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.TRANSITION_DELAY = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
+exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
 
 var _browser = __webpack_require__(2);
 
@@ -368,7 +368,7 @@ var MULTI = exports.MULTI = true;
 var SINGLE = exports.SINGLE = false;
 var DUMMY_POSITION = exports.DUMMY_POSITION = -100000;
 var GROUPKEY_ATT = exports.GROUPKEY_ATT = "data-groupkey";
-var TRANSITION_DELAY = exports.TRANSITION_DELAY = 200;
+
 var DEFAULT_OPTIONS = exports.DEFAULT_OPTIONS = {
 	horizontal: false,
 	margin: 0
@@ -773,27 +773,6 @@ var _utils = __webpack_require__(0);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _ref = function () {
-	var properties = {
-		transitionend: "",
-		webkitTransitionEnd: "-webkit-",
-		oTransitionEnd: "-o-",
-		mozTransitionEnd: "-moz-"
-	};
-
-	for (var property in properties) {
-		var prefix = properties[property];
-
-		if ("on" + property.toLowerCase() in window) {
-			return [prefix + "transform", prefix + "transition", property];
-		}
-	}
-	return [];
-}(),
-    TRANSFORM = _ref[0],
-    TRANSITION = _ref[1],
-    TRANSITION_END = _ref[2];
-
 function _defense(element) {
 	var container = document.createElement("div");
 
@@ -811,58 +790,26 @@ function _defense(element) {
 	element.appendChild(container);
 	return container;
 }
-function render(properteis, rect, styles) {
-	properteis.forEach(function (p) {
-		p in rect && (styles[p] = rect[p] + "px");
-	});
-}
-function setTransition(styles, transitionDuration, x, y) {
-	styles[TRANSITION + "-property"] = transitionDuration ? TRANSFORM + ",width,height" : "";
-	styles[TRANSITION + "-duration"] = transitionDuration ? transitionDuration + "s" : "";
-	styles[TRANSITION + "-delay"] = transitionDuration ? "0s" : "";
-	styles[TRANSFORM] = transitionDuration ? "translate(" + x + "px," + y + "px)" : "";
-}
 
 var DOMRenderer = function () {
-	DOMRenderer.renderItem = function renderItem(item, rect, transitionDuration) {
-		if (!item.el) {
-			return;
-		}
-		var el = item.el,
-		    renderRect = item.renderRect;
+	DOMRenderer.renderItem = function renderItem(item, styles) {
+		var el = item.el;
 
-		var styles = el.style;
+		if (el) {
+			var elStyle = el.style;
 
-		// for debugging
-		el.setAttribute(_consts.GROUPKEY_ATT, item.groupKey);
-		styles.position = "absolute";
-		render(["width", "height"], rect, styles);
-		if (transitionDuration && TRANSITION && renderRect) {
-			setTransition(styles, transitionDuration, rect.left - renderRect.left, rect.top - renderRect.top);
-			if (item.transition) {
-				return;
-			}
-			item.transition = function () {
-				var itemRect = item.rect;
-
-				setTransition(styles);
-				render(["left", "top"], itemRect, styles);
-				item.renderRect = itemRect;
-				(0, _utils.removeEvent)(el, TRANSITION_END, item.transition);
-				item.transition = 0;
-			};
-			(0, _utils.addEvent)(el, TRANSITION_END, item.transition);
-		} else {
-			render(["left", "top"], rect, styles);
-			item.renderRect = rect;
+			// for debugging
+			el.setAttribute(_consts.GROUPKEY_ATT, item.groupKey);
+			elStyle.position = "absolute";
+			["left", "top", "width", "height"].forEach(function (p) {
+				p in styles && (elStyle[p] = styles[p] + "px");
+			});
 		}
 	};
 
 	DOMRenderer.renderItems = function renderItems(items) {
-		var transitionDuration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-
 		items.forEach(function (item) {
-			DOMRenderer.renderItem(item, item.rect, transitionDuration);
+			DOMRenderer.renderItem(item, item.rect);
 		});
 	};
 
@@ -871,7 +818,6 @@ var DOMRenderer = function () {
 			if (item.el) {
 				DOMRenderer.removeElement(item.el);
 				item.el = null;
-				item.rendRect = null;
 			}
 		});
 	};
@@ -889,8 +835,8 @@ var DOMRenderer = function () {
 		if (!items.length || items[0].el) {
 			return items;
 		}
-		var elements = (0, _utils.$)(items.map(function (_ref2) {
-			var content = _ref2.content;
+		var elements = (0, _utils.$)(items.map(function (_ref) {
+			var content = _ref.content;
 			return content.replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, "");
 		}).join(""), _consts.MULTI);
 
@@ -906,7 +852,6 @@ var DOMRenderer = function () {
 		_extends(this.options = {
 			isOverflowScroll: false,
 			isEqualSize: false,
-			isConstantSize: false,
 			horizontal: false
 		}, options);
 		this._size = {
@@ -934,23 +879,22 @@ var DOMRenderer = function () {
 	};
 
 	DOMRenderer.prototype.updateSize = function updateSize(items) {
-		var _options = this.options,
-		    isEqualSize = _options.isEqualSize,
-		    isConstantSize = _options.isConstantSize;
-
-		var size = this._size;
+		var _this = this;
 
 		return items.map(function (item) {
-			var el = item.el;
-
-			if (el) {
-				if (isEqualSize && !size.item) {
-					size.item = {
-						width: (0, _utils.innerWidth)(el),
-						height: (0, _utils.innerHeight)(el)
+			if (item.el) {
+				if (_this.options.isEqualSize) {
+					_this._size.item = _this._size.item || {
+						width: (0, _utils.innerWidth)(item.el),
+						height: (0, _utils.innerHeight)(item.el)
+					};
+					item.size = _extends({}, _this._size.item);
+				} else {
+					item.size = {
+						width: (0, _utils.innerWidth)(item.el),
+						height: (0, _utils.innerHeight)(item.el)
 					};
 				}
-				item.size = isEqualSize && _extends(size.item) || isConstantSize && item.orgSize && _extends(item.orgSize) || { width: (0, _utils.innerWidth)(el), height: (0, _utils.innerHeight)(el) };
 				if (!item.orgSize) {
 					item.orgSize = _extends({}, item.size);
 				}
@@ -962,9 +906,9 @@ var DOMRenderer = function () {
 	DOMRenderer.prototype._init = function _init(el) {
 		var element = (0, _utils.$)(el);
 		var style = (0, _utils.getStyles)(element);
-		var _options2 = this.options,
-		    isOverflowScroll = _options2.isOverflowScroll,
-		    horizontal = _options2.horizontal;
+		var _options = this.options,
+		    isOverflowScroll = _options.isOverflowScroll,
+		    horizontal = _options.horizontal;
 
 
 		this._orgStyle = {};
@@ -1047,9 +991,9 @@ var DOMRenderer = function () {
 	};
 
 	DOMRenderer.prototype.setContainerSize = function setContainerSize(size) {
-		var _options3 = this.options,
-		    isOverflowScroll = _options3.isOverflowScroll,
-		    horizontal = _options3.horizontal;
+		var _options2 = this.options,
+		    isOverflowScroll = _options2.isOverflowScroll,
+		    horizontal = _options2.horizontal;
 
 
 		if (!isOverflowScroll || horizontal && _consts.DEFENSE_BROWSER) {
@@ -1058,17 +1002,17 @@ var DOMRenderer = function () {
 	};
 
 	DOMRenderer.prototype.resize = function resize() {
-		var _options4 = this.options,
-		    isConstantSize = _options4.isConstantSize,
-		    horizontal = _options4.horizontal;
-
-		var size = this._size;
+		var horizontal = this.options.horizontal;
 		var view = this.view;
 		var isResize = this.isNeededResize();
 
-		isResize && (size.viewport = this._calcSize());
-		!isConstantSize && (size.item = null);
-		size.view = horizontal ? (0, _utils.innerWidth)(view) : (0, _utils.innerHeight)(view);
+		if (isResize) {
+			this._size = {
+				viewport: this._calcSize(),
+				item: null
+			};
+		}
+		this._size.view = horizontal ? (0, _utils.innerWidth)(view) : (0, _utils.innerHeight)(view);
 		return isResize;
 	};
 
@@ -1849,9 +1793,13 @@ var FrameLayout = function () {
 		var endOutline = (0, _utils.fill)(new Array(shapesSize), _consts.DUMMY_POSITION);
 		var dist = 0;
 		var end = 0;
+		var startIndex = -1;
+		var endIndex = -1;
+		var minPos = -1;
+		var maxPos = -1;
 
 		if (!shapesLength) {
-			return { start: outline, end: outline };
+			return { start: outline, end: outline, startIndex: startIndex, endIndex: endIndex };
 		}
 		for (var i = 0; i < length; i += shapesLength) {
 			for (var j = 0; j < shapesLength && i + j < length; ++j) {
@@ -1871,6 +1819,20 @@ var FrameLayout = function () {
 				for (var k = shapePos2; k < shapePos2 + shapeSize2 && k < shapesSize; ++k) {
 					if (startOutline[k] === _consts.DUMMY_POSITION) {
 						startOutline[k] = pos1;
+					}
+					if (startIndex === -1) {
+						minPos = pos1;
+						startIndex = i + j;
+						maxPos = pos1 + size1 + margin;
+						endIndex = i + j;
+					}
+					if (minPos > pos1) {
+						minPos = pos1;
+						startIndex = i + j;
+					}
+					if (maxPos < pos1 + size1 + margin) {
+						maxPos = pos1 + size1 + margin;
+						endIndex = i + j;
 					}
 					startOutline[k] = Math.min(startOutline[k], pos1);
 					endOutline[k] = Math.max(endOutline[k], pos1 + size1 + margin);
@@ -1934,7 +1896,9 @@ var FrameLayout = function () {
 			}),
 			end: endOutline.map(function (point) {
 				return parseInt(point, 10);
-			})
+			}),
+			startIndex: startIndex,
+			endIndex: endIndex
 		};
 	};
 
@@ -2232,8 +2196,6 @@ var InfiniteGrid = function (_Component) {
   * @param {Boolean} [options.isOverflowScroll=false] Indicates whether overflow:scroll is applied<ko>overflow:scroll 적용여부를 결정한다.</ko>
   * @param {Boolean} [options.horizontal=false] Direction of the scroll movement (true: horizontal, false: vertical) <ko>스크롤 이동 방향 (true 가로방향, false 세로방향)</ko>
   * @param {Boolean} [options.isEqualSize=false] Indicates whether sizes of all card elements are equal to one another. If sizes of card elements to be arranged are all equal and this option is set to "true", the performance of layout arrangement can be improved. <ko>카드 엘리먼트의 크기가 동일한지 여부. 배치될 카드 엘리먼트의 크기가 모두 동일할 때 이 옵션을 'true'로 설정하면 레이아웃 배치 성능을 높일 수 있다</ko>
-  * @param {Number} [options.transitionDruation=0] Indicates how many seconds a transition effect takes to complete. <ko>트랜지션 효과를 완료하는데 걸리는 시간을 나타낸다.</ko>
-  * @param {Boolean} [options.isConstantSize=false] Indicates whether sizes of all card elements does not change. <ko>카드 엘리먼트의 크기가 변하지 않는지 여부.</ko>
   * @param {Number} [options.threshold=100] The threshold size of an event area where card elements are added to a layout.<ko>레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.</ko>
   * @param {String} [options.attributePrefix="data-"] The prefix to use element's data attribute.<ko>엘리먼트의 데이타 속성에 사용할 접두사.</ko>
   */
@@ -2249,8 +2211,7 @@ var InfiniteGrid = function (_Component) {
 			isEqualSize: false,
 			useRecycle: true,
 			horizontal: false,
-			attributePrefix: "data-",
-			transitionDuration: 0
+			attributePrefix: "data-"
 		}, options);
 		_this.options.useFit = !_consts.DEFENSE_BROWSER;
 		_consts.IS_ANDROID2 && (_this.options.isOverflowScroll = false);
@@ -2259,7 +2220,6 @@ var InfiniteGrid = function (_Component) {
 
 		var _this$options = _this.options,
 		    isOverflowScroll = _this$options.isOverflowScroll,
-		    isConstantSize = _this$options.isConstantSize,
 		    isEqualSize = _this$options.isEqualSize,
 		    horizontal = _this$options.horizontal,
 		    threshold = _this$options.threshold,
@@ -2270,7 +2230,6 @@ var InfiniteGrid = function (_Component) {
 		_this._renderer = new _DOMRenderer2["default"](element, {
 			isOverflowScroll: isOverflowScroll,
 			isEqualSize: isEqualSize,
-			isConstantSize: isConstantSize,
 			horizontal: horizontal
 		});
 		_this._watcher = new _Watcher2["default"](_this._renderer.view, {
@@ -2474,7 +2433,11 @@ var InfiniteGrid = function (_Component) {
 		}
 		var renderer = this._renderer;
 		var itemManager = this._items;
+		var isResize = renderer.resize();
 
+		if (isRelayout && isResize) {
+			this._setSize(renderer.getViewportSize());
+		}
 		// check childElement
 		if (!this._items.size()) {
 			this._insert((0, _utils.toArray)(renderer.container.children), true);
@@ -2485,28 +2448,21 @@ var InfiniteGrid = function (_Component) {
 
 		var infinite = this._infinite;
 		var items = this.getItems();
-		var _options = this.options,
-		    transitionDuration = _options.transitionDuration,
-		    isEqualSize = _options.isEqualSize,
-		    isConstantSize = _options.isConstantSize,
-		    horizontal = _options.horizontal;
-
-		var isLayoutAll = isEqualSize || isConstantSize;
+		var isEqualSize = this.options.isEqualSize;
 
 		if (!items.length) {
 			return this;
 		}
 		if (isRelayout) {
 			// remove cache
-			if (isLayoutAll) {
+			if (isEqualSize) {
 				renderer.updateSize([items[0]]);
 				data = itemManager.get();
 				outline = itemManager.getOutline(0, "start");
 			} else {
 				data = infinite.getVisibleData();
 			}
-			if (renderer.resize()) {
-				this._setSize(renderer.getViewportSize());
+			if (isResize) {
 				data.forEach(function (v) {
 					data.items = renderer.updateSize(v.items);
 				});
@@ -2518,39 +2474,35 @@ var InfiniteGrid = function (_Component) {
 		if (!data.length) {
 			return this;
 		}
-		var startCursor = infinite.getCursor("start");
-		var endCursor = infinite.getCursor("end");
-		var beforeLayoutOutline = Math.min.apply(Math, infinite.getEdgeOutline("start"));
-
 		this._layout.layout(data, outline);
-		var afterLayoutOutline = Math.min.apply(Math, infinite.getEdgeOutline("start"));
 
 		if (isRelayout) {
-			if (isLayoutAll) {
-				itemManager.fit(afterLayoutOutline - beforeLayoutOutline, horizontal);
+			if (isEqualSize) {
 				this._fit();
 			} else {
-				itemManager._data.forEach(function (_ref, cursor) {
-					var outlines = _ref.outlines;
+				var startCursor = infinite.getCursor("start");
+				var endCursor = infinite.getCursor("end");
 
+				itemManager._data.forEach(function (group, cursor) {
 					if (startCursor <= cursor && cursor <= endCursor) {
 						return;
 					}
-					outlines.start = [];
-					outlines.end = [];
+					group.outlines.start = [];
+					group.outlines.end = [];
 				});
 			}
 		}
-		_DOMRenderer2["default"].renderItems(items, transitionDuration);
 		this._onLayoutComplete({
 			items: items,
 			isAppend: _consts.APPEND,
 			fromCache: _consts.CACHE,
-			isTrusted: false,
+			isTrusted: _consts.NO_TRUSTED,
 			useRecycle: false,
 			isLayout: true
 		});
+		_DOMRenderer2["default"].renderItems(items);
 		isRelayout && this._watcher.setScrollPos();
+
 		return this;
 	};
 	/**
@@ -2743,15 +2695,15 @@ var InfiniteGrid = function (_Component) {
 			fromCache: _consts.NO_CACHE,
 			items: items,
 			isAppend: isAppend,
-			isTrusted: false
+			isTrusted: _consts.NO_TRUSTED
 		});
 	};
 	// add items, and remove items for recycling
 
 
-	InfiniteGrid.prototype._recycle = function _recycle(_ref2) {
-		var start = _ref2.start,
-		    end = _ref2.end;
+	InfiniteGrid.prototype._recycle = function _recycle(_ref) {
+		var start = _ref.start,
+		    end = _ref.end;
 
 		if (!this.options.useRecycle) {
 			return;
@@ -2895,14 +2847,13 @@ var InfiniteGrid = function (_Component) {
 		var startCursor = infinite.getCursor("start");
 		var endCursor = infinite.getCursor("end");
 		var isInCursor = startCursor <= index && index <= endCursor;
-		var _options2 = this.options,
-		    useRecycle = _options2.useRecycle,
-		    isEqualSize = _options2.isEqualSize,
-		    isConstantSize = _options2.isConstantSize,
-		    horizontal = _options2.horizontal;
+		var _options = this.options,
+		    useRecycle = _options.useRecycle,
+		    isEqualSize = _options.isEqualSize,
+		    horizontal = _options.horizontal;
 
 
-		if (isInCursor || !useRecycle || isEqualSize || isConstantSize || !isResize) {
+		if (isInCursor || !useRecycle || isEqualSize || !isResize) {
 			var pos = item && item.rect[horizontal ? "left" : "top"];
 
 			if (typeof pos === "undefined") {
@@ -2936,7 +2887,7 @@ var InfiniteGrid = function (_Component) {
 					isAppend: isAppend,
 					outline: outlines[isAppend ? "start" : "end"],
 					cache: data,
-					isTrusted: false,
+					isTrusted: _consts.NO_TRUSTED,
 					moveItem: itemIndex
 				});
 				return this;
@@ -2961,7 +2912,7 @@ var InfiniteGrid = function (_Component) {
 				isAppend: _isAppend,
 				fromCache: _consts.CACHE,
 				items: data.items,
-				isTrusted: false,
+				isTrusted: _consts.TRUSTED,
 				moveItem: itemIndex
 			});
 		}
@@ -2976,15 +2927,15 @@ var InfiniteGrid = function (_Component) {
 		this._watcher.scrollTo(this._watcher.getContainerOffset() + pos);
 	};
 
-	InfiniteGrid.prototype._postLayoutComplete = function _postLayoutComplete(_ref3) {
-		var layouted = _ref3.layouted,
-		    isAppend = _ref3.isAppend,
-		    isTrusted = _ref3.isTrusted,
-		    fromCache = _ref3.fromCache,
-		    _ref3$moveItem = _ref3.moveItem,
-		    moveItem = _ref3$moveItem === undefined ? -2 : _ref3$moveItem,
-		    _ref3$useRecycle = _ref3.useRecycle,
-		    useRecycle = _ref3$useRecycle === undefined ? this.options.useRecycle : _ref3$useRecycle;
+	InfiniteGrid.prototype._postLayoutComplete = function _postLayoutComplete(_ref2) {
+		var layouted = _ref2.layouted,
+		    isAppend = _ref2.isAppend,
+		    isTrusted = _ref2.isTrusted,
+		    fromCache = _ref2.fromCache,
+		    _ref2$moveItem = _ref2.moveItem,
+		    moveItem = _ref2$moveItem === undefined ? -2 : _ref2$moveItem,
+		    _ref2$useRecycle = _ref2.useRecycle,
+		    useRecycle = _ref2$useRecycle === undefined ? this.options.useRecycle : _ref2$useRecycle;
 
 		var pos = Math.max.apply(Math, layouted.outlines.start);
 
@@ -3139,11 +3090,10 @@ var InfiniteGrid = function (_Component) {
 		var _this2 = this;
 
 		var scrollPos = this._watcher.getScrollPos();
-		var _options3 = this.options,
-		    useRecycle = _options3.useRecycle,
-		    isEqualSize = _options3.isEqualSize,
-		    isConstantSize = _options3.isConstantSize,
-		    attributePrefix = _options3.attributePrefix;
+		var _options2 = this.options,
+		    useRecycle = _options2.useRecycle,
+		    isEqualSize = _options2.isEqualSize,
+		    attributePrefix = _options2.attributePrefix;
 
 
 		if (!removeTarget.length && !replaceTarget.length) {
@@ -3159,7 +3109,7 @@ var InfiniteGrid = function (_Component) {
 		removeTarget.forEach(function (element) {
 			_this2.remove(element, false);
 		});
-		if (isEqualSize || isConstantSize) {
+		if (isEqualSize) {
 			if (removeTarget.length > 0) {
 				this.layout(false);
 			} else if (!this.isProcessing() && useRecycle) {
@@ -3179,15 +3129,15 @@ var InfiniteGrid = function (_Component) {
 		});
 	};
 
-	InfiniteGrid.prototype._postCache = function _postCache(_ref4) {
-		var cache = _ref4.cache,
-		    isAppend = _ref4.isAppend,
-		    _ref4$isTrusted = _ref4.isTrusted,
-		    isTrusted = _ref4$isTrusted === undefined ? true : _ref4$isTrusted,
-		    _ref4$outline = _ref4.outline,
-		    outline = _ref4$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref4$outline,
-		    _ref4$moveItem = _ref4.moveItem,
-		    moveItem = _ref4$moveItem === undefined ? -2 : _ref4$moveItem;
+	InfiniteGrid.prototype._postCache = function _postCache(_ref3) {
+		var cache = _ref3.cache,
+		    isAppend = _ref3.isAppend,
+		    _ref3$isTrusted = _ref3.isTrusted,
+		    isTrusted = _ref3$isTrusted === undefined ? true : _ref3$isTrusted,
+		    _ref3$outline = _ref3.outline,
+		    outline = _ref3$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref3$outline,
+		    _ref3$moveItem = _ref3.moveItem,
+		    moveItem = _ref3$moveItem === undefined ? -2 : _ref3$moveItem;
 
 		var cacheOutline = cache.outlines[isAppend ? "start" : "end"];
 
@@ -3211,32 +3161,27 @@ var InfiniteGrid = function (_Component) {
 		});
 	};
 
-	InfiniteGrid.prototype._postLayout = function _postLayout(_ref5) {
+	InfiniteGrid.prototype._postLayout = function _postLayout(_ref4) {
 		var _this3 = this;
 
-		var fromCache = _ref5.fromCache,
-		    items = _ref5.items,
-		    isAppend = _ref5.isAppend,
-		    _ref5$outline = _ref5.outline,
-		    outline = _ref5$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref5$outline,
-		    isTrusted = _ref5.isTrusted,
-		    _ref5$moveItem = _ref5.moveItem,
-		    moveItem = _ref5$moveItem === undefined ? -2 : _ref5$moveItem;
+		var fromCache = _ref4.fromCache,
+		    items = _ref4.items,
+		    isAppend = _ref4.isAppend,
+		    _ref4$outline = _ref4.outline,
+		    outline = _ref4$outline === undefined ? this._infinite.getEdgeOutline(isAppend ? "end" : "start") : _ref4$outline,
+		    isTrusted = _ref4.isTrusted,
+		    _ref4$moveItem = _ref4.moveItem,
+		    moveItem = _ref4$moveItem === undefined ? -2 : _ref4$moveItem;
 
 		this._process(_consts.PROCESSING);
 		var method = isAppend ? "append" : "prepend";
-		var renderer = this._renderer;
 
 		fromCache && _DOMRenderer2["default"].createElements(items);
-		renderer[method](items);
+		this._renderer[method](items);
 
 		// check image sizes after elements are attated on DOM
-		var _options4 = this.options,
-		    isEqualSize = _options4.isEqualSize,
-		    isConstantSize = _options4.isConstantSize,
-		    attributePrefix = _options4.attributePrefix;
-
-		var type = (isEqualSize || isConstantSize) && renderer._size.item ? _ImageLoaded.CHECK_ONLY_ERROR : _ImageLoaded.CHECK_ALL;
+		var type = this.options.isEqualSize && this._renderer._size.item ? _ImageLoaded.CHECK_ONLY_ERROR : _ImageLoaded.CHECK_ALL;
+		var prefix = this.options.attributePrefix;
 		var replaceTarget = [];
 		var removeTarget = [];
 		var layouted = void 0;
@@ -3244,16 +3189,16 @@ var InfiniteGrid = function (_Component) {
 		_ImageLoaded2["default"].check(items.map(function (item) {
 			return item.el;
 		}), {
-			prefix: attributePrefix,
+			prefix: prefix,
 			type: type,
 			complete: function complete() {
-				layouted = _this3._layout[method](renderer.updateSize(items), outline);
+				layouted = _this3._layout[method](_this3._renderer.updateSize(items), outline);
 				// no recycle
 				_this3._postImageLoaded(fromCache, layouted, items, isAppend, isTrusted, moveItem);
 			},
-			error: function error(_ref6) {
-				var target = _ref6.target,
-				    itemIndex = _ref6.itemIndex;
+			error: function error(_ref5) {
+				var target = _ref5.target,
+				    itemIndex = _ref5.itemIndex;
 
 				var item = layouted && layouted.items[itemIndex] || items[itemIndex];
 
@@ -3269,8 +3214,8 @@ var InfiniteGrid = function (_Component) {
 	// called by visible
 
 
-	InfiniteGrid.prototype._requestAppend = function _requestAppend(_ref7) {
-		var cache = _ref7.cache;
+	InfiniteGrid.prototype._requestAppend = function _requestAppend(_ref6) {
+		var cache = _ref6.cache;
 
 		if (this._isProcessing()) {
 			return;
@@ -3287,7 +3232,7 @@ var InfiniteGrid = function (_Component) {
     * @param {Boolean} param.isTrusted Returns true if an event was generated by the user action, or false if it was caused by a script or API call <ko>사용자의 액션에 의해 이벤트가 발생하였으면 true, 스크립트나 API호출에 의해 발생하였을 경우에는 false를 반환한다.</ko>
     */
 			this.trigger("append", {
-				isTrusted: true,
+				isTrusted: _consts.TRUSTED,
 				groupKey: this.getGroupKeys().pop()
 			});
 		}
@@ -3295,10 +3240,10 @@ var InfiniteGrid = function (_Component) {
 	// called by visible
 
 
-	InfiniteGrid.prototype._requestPrepend = function _requestPrepend(_ref8) {
-		var cache = _ref8.cache,
-		    _ref8$fit = _ref8.fit,
-		    fit = _ref8$fit === undefined ? true : _ref8$fit;
+	InfiniteGrid.prototype._requestPrepend = function _requestPrepend(_ref7) {
+		var cache = _ref7.cache,
+		    _ref7$fit = _ref7.fit,
+		    fit = _ref7$fit === undefined ? true : _ref7$fit;
 
 		if (fit) {
 			this._fit();
@@ -3318,7 +3263,7 @@ var InfiniteGrid = function (_Component) {
     * @param {Boolean} param.isTrusted Returns true if an event was generated by the user action, or false if it was caused by a script or API call <ko>사용자의 액션에 의해 이벤트가 발생하였으면 true, 스크립트나 API호출에 의해 발생하였을 경우에는 false를 반환한다.</ko>
     */
 			this.trigger("prepend", {
-				isTrusted: true,
+				isTrusted: _consts.TRUSTED,
 				groupKey: this.getGroupKeys().shift()
 			});
 		}
@@ -3328,11 +3273,11 @@ var InfiniteGrid = function (_Component) {
 		this.layout(true);
 	};
 
-	InfiniteGrid.prototype._onCheck = function _onCheck(_ref9) {
-		var isForward = _ref9.isForward,
-		    scrollPos = _ref9.scrollPos,
-		    horizontal = _ref9.horizontal,
-		    orgScrollPos = _ref9.orgScrollPos;
+	InfiniteGrid.prototype._onCheck = function _onCheck(_ref8) {
+		var isForward = _ref8.isForward,
+		    scrollPos = _ref8.scrollPos,
+		    horizontal = _ref8.horizontal,
+		    orgScrollPos = _ref8.orgScrollPos;
 
 		/**
    * This event is fired when the user scrolls.
@@ -3354,17 +3299,17 @@ var InfiniteGrid = function (_Component) {
 		this._infinite.scroll(scrollPos, isForward);
 	};
 
-	InfiniteGrid.prototype._onLayoutComplete = function _onLayoutComplete(_ref10) {
-		var items = _ref10.items,
-		    isAppend = _ref10.isAppend,
-		    _ref10$isTrusted = _ref10.isTrusted,
-		    isTrusted = _ref10$isTrusted === undefined ? false : _ref10$isTrusted,
-		    _ref10$useRecycle = _ref10.useRecycle,
-		    useRecycle = _ref10$useRecycle === undefined ? this.options.useRecycle : _ref10$useRecycle,
-		    _ref10$fromCache = _ref10.fromCache,
-		    fromCache = _ref10$fromCache === undefined ? false : _ref10$fromCache,
-		    _ref10$isLayout = _ref10.isLayout,
-		    isLayout = _ref10$isLayout === undefined ? false : _ref10$isLayout;
+	InfiniteGrid.prototype._onLayoutComplete = function _onLayoutComplete(_ref9) {
+		var items = _ref9.items,
+		    isAppend = _ref9.isAppend,
+		    _ref9$isTrusted = _ref9.isTrusted,
+		    isTrusted = _ref9$isTrusted === undefined ? false : _ref9$isTrusted,
+		    _ref9$useRecycle = _ref9.useRecycle,
+		    useRecycle = _ref9$useRecycle === undefined ? this.options.useRecycle : _ref9$useRecycle,
+		    _ref9$fromCache = _ref9.fromCache,
+		    fromCache = _ref9$fromCache === undefined ? false : _ref9$fromCache,
+		    _ref9$isLayout = _ref9.isLayout,
+		    isLayout = _ref9$isLayout === undefined ? false : _ref9$isLayout;
 
 		var viewSize = this._renderer.getViewSize();
 
@@ -3375,12 +3320,11 @@ var InfiniteGrid = function (_Component) {
 		}
 
 		var watcher = this._watcher;
-		var infinite = this._infinite;
 		var scrollPos = watcher.getScrollPos();
 
 		// recycle after _fit beacause prepend and append are occured simultaneously by scroll.
 		if (!isLayout && useRecycle && !this._isLoading()) {
-			infinite.recycle(scrollPos, isAppend);
+			this._infinite.recycle(scrollPos, isAppend);
 		}
 
 		var size = this._getEdgeValue("end");
@@ -3397,8 +3341,7 @@ var InfiniteGrid = function (_Component) {
    * @param {Object} param The object of data to be sent to an event <ko>이벤트에 전달되는 데이터 객체</ko>
    * @param {Array} param.target Rearranged card elements<ko>재배치된 카드 엘리먼트들</ko>
    * @param {Boolean} param.isAppend Checks whether the append() method is used to add a card element. It returns true even though the layoutComplete event is fired after the layout() method is called. <ko>카드 엘리먼트가 append() 메서드로 추가됐는지 확인한다. layout() 메서드가 호출된 후 layoutComplete 이벤트가 발생해도 'true'를 반환한다.</ko>
-   * @param {Boolean} param.isLayout Checks whether reordering occurs by calling the layout() method or resizing. <ko> layout() 메소드 호출 또는 리사이징에 의해 재정렬이 일어났는지 확인한다.</ko>
-   * @param {Boolean} param.isScroll Checks whether scrolling has occurred after the append(), prepend(), ..., etc method is called
+   * @param {Boolean} param.isScroll Checks whether scrolling has occurred after the append(), prepend(), ..., etc method is called <ko>append, prend 등 호출 후 스크롤이 생겼는지 확인한다.</ko>
    * @param {Number} param.scrollPos Current scroll position value relative to the infiniteGrid container element. <ko>infiniteGrid 컨테이너 엘리먼트 기준의 현재 스크롤 위치값</ko>
    * @param {Number} param.orgScrollPos Current position of the scroll <ko>현재 스크롤 위치값</ko>
    * @param {Number} param.size The size of container element <ko>컨테이너 엘리먼트의 크기</ko>
@@ -3408,24 +3351,12 @@ var InfiniteGrid = function (_Component) {
 			target: items.concat(),
 			isAppend: isAppend,
 			isTrusted: isTrusted,
-			isLayout: isLayout,
 			isScroll: viewSize < watcher.getContainerOffset() + size,
 			scrollPos: scrollPos,
 			orgScrollPos: watcher.getOrgScrollPos(),
 			size: size
 		});
-
-		var transitionItem = items[isAppend ? items.length - 1 : 0];
-
-		if (transitionItem && transitionItem.transition) {
-			transitionItem.timer && clearTimeout(transitionItem.timer);
-			transitionItem.timer = setTimeout(function () {
-				transitionItem.timer = 0;
-				infinite.scroll(watcher.getScrollPos(), isAppend);
-			}, this.options.transitionDuration * 1000 + _consts.TRANSITION_DELAY);
-		} else {
-			infinite.scroll(scrollPos, isAppend);
-		}
+		this._infinite.scroll(scrollPos, isAppend);
 	};
 
 	InfiniteGrid.prototype._reset = function _reset() {
@@ -3441,7 +3372,6 @@ var InfiniteGrid = function (_Component) {
 
 
 	InfiniteGrid.prototype.destroy = function destroy() {
-		this.clear();
 		this.off();
 		this._infinite.clear();
 		this._watcher.destroy();
@@ -3582,6 +3512,9 @@ var GridLayout = function () {
 		var pointCaculateName = isAppend ? "min" : "max";
 		var startOutline = outline.slice();
 		var endOutline = outline.slice();
+		var startIndex = 0;
+		var endIndex = -1;
+		var endPos = -1;
 
 		for (var i = 0; i < length; ++i) {
 			var _item$rect;
@@ -3615,6 +3548,13 @@ var GridLayout = function () {
 			item.rect = (_item$rect = {}, _item$rect[pos1Name] = pos1, _item$rect[pos2Name] = pos2, _item$rect);
 			item.column = index;
 			endOutline[index] = isAppend ? endPos1 : pos1;
+			if (endIndex === -1) {
+				endIndex = i;
+				endPos = endPos1;
+			} else if (endPos < endPos1) {
+				endIndex = i;
+				endPos = endPos1;
+			}
 		}
 		if (!isAppend) {
 			items.sort(function (a, b) {
@@ -3628,12 +3568,15 @@ var GridLayout = function () {
 				}
 				return item1pos2 - item2pos2;
 			});
+			endIndex = length - 1;
 		}
 		// if append items, startOutline is low, endOutline is high
 		// if prepend items, startOutline is high, endOutline is low
 		return {
 			start: isAppend ? startOutline : endOutline,
-			end: isAppend ? endOutline : startOutline
+			end: isAppend ? endOutline : startOutline,
+			startIndex: startIndex,
+			endIndex: endIndex
 		};
 	};
 
@@ -3924,6 +3867,8 @@ var SquareLayout = function (_FrameLayout) {
 		var result = _FrameLayout.prototype._layout.call(this, items, outline, isAppend);
 
 		if (!isAppend) {
+			var lastItem = items[items.length - 1];
+
 			shapes.sort(function (shape1, shape2) {
 				var item1pos1 = shape1[pos1Name];
 				var item1pos2 = shape1[pos2Name];
@@ -3946,6 +3891,8 @@ var SquareLayout = function (_FrameLayout) {
 				}
 				return item1pos2 - item2pos2;
 			});
+			result.startIndex = 0;
+			result.endIndex = items.indexOf(lastItem);
 		}
 		return result;
 	};
@@ -4147,6 +4094,7 @@ var PackingLayout = function () {
 		    margin = _options2.margin;
 
 		var pos1Name = style.pos1;
+		var size1Name = style.size1;
 		var containerWidth = this._size * (horizontal ? aspectRatio : 1);
 		var containerHeight = this._size / (horizontal ? 1 : aspectRatio);
 		var containerSize1 = horizontal ? containerWidth : containerHeight;
@@ -4154,6 +4102,10 @@ var PackingLayout = function () {
 		var start = isAppend ? Math.max.apply(Math, prevOutline) : Math.min.apply(Math, prevOutline) - containerSize1 - margin;
 		var end = start + containerSize1 + margin;
 		var container = new _BoxModel2["default"]({});
+		var startIndex = -1;
+		var endIndex = -1;
+		var startPos = -1;
+		var endPos = -1;
 
 		items.forEach(function (item) {
 			var _item$orgSize = item.orgSize,
@@ -4180,11 +4132,28 @@ var PackingLayout = function () {
 
 			item.rect = { top: top, left: left, width: width - margin, height: height - margin };
 			item.rect[pos1Name] += start;
+
+			if (startIndex === -1) {
+				startIndex = i;
+				endIndex = i;
+				startPos = item.rect[pos1Name];
+				endPos = startPos;
+			}
+			if (startPos > item.rect[pos1Name]) {
+				startPos = item.rect[pos1Name];
+				startIndex = i;
+			}
+			if (endPos < item.rect[pos1Name] + item.rect[size1Name] + margin) {
+				endPos = item.rect[pos1Name] + item.rect[size1Name] + margin;
+				endIndex = i;
+			}
 		});
 
 		return {
 			start: [start],
-			end: [end]
+			end: [end],
+			startIndex: startIndex,
+			endIndex: endIndex
 		};
 	};
 
@@ -4552,12 +4521,16 @@ var JustifiedLayout = function () {
 			endPoint = startPoint + height;
 		}
 		var itemsLength = items.length;
+		var startIndex = itemsLength ? 0 : -1;
+		var endIndex = itemsLength ? itemsLength - 1 : -1;
 
 		if (isAppend) {
 			// previous group's end outline is current group's start outline
 			return {
 				start: [startPoint],
-				end: [endPoint]
+				end: [endPoint],
+				startIndex: startIndex,
+				endIndex: endIndex
 			};
 		}
 		// for prepend, only substract height from position.
@@ -4571,7 +4544,9 @@ var JustifiedLayout = function () {
 		}
 		return {
 			start: [startPoint - height],
-			end: [startPoint] // endPoint - height = startPoint
+			end: [startPoint], // endPoint - height = startPoint
+			startIndex: startIndex,
+			endIndex: endIndex
 		};
 	};
 

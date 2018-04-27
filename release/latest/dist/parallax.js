@@ -90,7 +90,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 exports.__esModule = true;
-exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.TRANSITION_DELAY = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
+exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
 
 var _browser = __webpack_require__(1);
 
@@ -132,7 +132,7 @@ var MULTI = exports.MULTI = true;
 var SINGLE = exports.SINGLE = false;
 var DUMMY_POSITION = exports.DUMMY_POSITION = -100000;
 var GROUPKEY_ATT = exports.GROUPKEY_ATT = "data-groupkey";
-var TRANSITION_DELAY = exports.TRANSITION_DELAY = 200;
+
 var DEFAULT_OPTIONS = exports.DEFAULT_OPTIONS = {
 	horizontal: false,
 	margin: 0
@@ -623,7 +623,7 @@ function _getSize(el, name) {
 		var style = getStyles(el);
 		var value = style[name.toLowerCase()];
 
-		return parseFloat(/auto|%/.test(value) ? el["offset" + name] : style[name.toLowerCase()]);
+		return parseFloat(el["offset" + name] || value || 0);
 	}
 }
 function innerWidth(el) {
