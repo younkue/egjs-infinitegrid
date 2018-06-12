@@ -180,7 +180,7 @@ export default class Layout extends Component {
 			return;
 		}
 		this._updateLayout();
-		const items = this.state.items;
+		const items = this.state.items.filter(({loaded}) => loaded === LOADED);
 
 		if (!items.length) {
 			return;
