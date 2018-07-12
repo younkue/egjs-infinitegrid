@@ -727,6 +727,12 @@ var _utils = __webpack_require__(0);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function getSize(el) {
+	return {
+		width: (0, _utils.outerWidth)(el),
+		height: (0, _utils.outerHeight)(el)
+	};
+}
 function createContainer(element) {
 	var container = _browser.document.createElement("div");
 
@@ -809,8 +815,8 @@ var DOMRenderer = function () {
 		_classCallCheck(this, DOMRenderer);
 
 		_extends(this.options = {
-			isOverflowScroll: false,
 			isEqualSize: false,
+			isConstantSize: false,
 			horizontal: false,
 			container: false
 		}, options);
@@ -837,25 +843,22 @@ var DOMRenderer = function () {
 	};
 
 	DOMRenderer.prototype.updateSize = function updateSize(items) {
-		var _this = this;
+		var _options = this.options,
+		    isEqualSize = _options.isEqualSize,
+		    isConstantSize = _options.isConstantSize;
+
+		var size = this._size;
 
 		return items.map(function (item) {
-			if (item.el) {
-				if (_this.options.isEqualSize) {
-					_this._size.item = _this._size.item || {
-						width: (0, _utils.outerWidth)(item.el),
-						height: (0, _utils.outerHeight)(item.el)
-					};
-					item.size = _extends({}, _this._size.item);
-				} else {
-					item.size = {
-						width: (0, _utils.outerWidth)(item.el),
-						height: (0, _utils.outerHeight)(item.el)
-					};
-				}
-				if (!item.orgSize) {
-					item.orgSize = _extends({}, item.size);
-				}
+			if (!item.el) {
+				return item;
+			}
+			if (isEqualSize && !size.item) {
+				size.item = getSize(item.el);
+			}
+			item.size = isEqualSize && _extends(size.item) || isConstantSize && item.orgSize && _extends(item.orgSize) || getSize(item.el);
+			if (!item.orgSize) {
+				item.orgSize = _extends({}, item.size);
 			}
 			return item;
 		});
@@ -864,9 +867,9 @@ var DOMRenderer = function () {
 	DOMRenderer.prototype._init = function _init(el) {
 		var element = (0, _utils.$)(el);
 		var style = (0, _utils.getStyles)(element);
-		var _options = this.options,
-		    container = _options.container,
-		    horizontal = _options.horizontal;
+		var _options2 = this.options,
+		    container = _options2.container,
+		    horizontal = _options2.horizontal;
 
 
 		this._orgStyle = {};
@@ -2205,6 +2208,7 @@ var InfiniteGrid = function (_Component) {
   * @param {Boolean} [options.horizontal=false] Direction of the scroll movement (true: horizontal, false: vertical) <ko>스크롤 이동 방향 (true 가로방향, false 세로방향)</ko>
   * @param {Boolean} [options.useFit=true] The useFit option scrolls upwards so that no space is visible until an item is added <ko>위로 스크롤할 시 아이템을 추가하는 동안 보이는 빈 공간을 안보이게 한다.</ko>
   * @param {Boolean} [options.isEqualSize=false] Indicates whether sizes of all card elements are equal to one another. If sizes of card elements to be arranged are all equal and this option is set to "true", the performance of layout arrangement can be improved. <ko>카드 엘리먼트의 크기가 동일한지 여부. 배치될 카드 엘리먼트의 크기가 모두 동일할 때 이 옵션을 'true'로 설정하면 레이아웃 배치 성능을 높일 수 있다</ko>
+  * @param {Boolean} [options.isConstantSize=false] Indicates whether sizes of all card elements does not change, the performance of layout arrangement can be improved. <ko>모든 카드 엘리먼트의 크기가 불변일 때 이 옵션을 'true'로 설정하면 레이아웃 배치 성능을 높일 수 있다</ko>
   * @param {Number} [options.threshold=100] The threshold size of an event area where card elements are added to a layout.<ko>레이아웃에 카드 엘리먼트를 추가하는 이벤트가 발생하는 기준 영역의 크기.</ko>
   * @param {String} [options.attributePrefix="data-"] The prefix to use element's data attribute.<ko>엘리먼트의 데이타 속성에 사용할 접두사.</ko>
   */
@@ -2218,6 +2222,7 @@ var InfiniteGrid = function (_Component) {
 			isOverflowScroll: false,
 			threshold: 100,
 			isEqualSize: false,
+			isConstantSize: false,
 			useRecycle: true,
 			horizontal: false,
 			useFit: true,
@@ -2231,6 +2236,7 @@ var InfiniteGrid = function (_Component) {
 		var _this$options = _this.options,
 		    isOverflowScroll = _this$options.isOverflowScroll,
 		    isEqualSize = _this$options.isEqualSize,
+		    isConstantSize = _this$options.isConstantSize,
 		    horizontal = _this$options.horizontal,
 		    threshold = _this$options.threshold,
 		    useRecycle = _this$options.useRecycle;
@@ -2239,6 +2245,7 @@ var InfiniteGrid = function (_Component) {
 		_this._items = new _ItemManager2["default"]();
 		_this._renderer = new _DOMRenderer2["default"](element, {
 			isEqualSize: isEqualSize,
+			isConstantSize: isConstantSize,
 			horizontal: horizontal,
 			container: isOverflowScroll
 		});
@@ -2287,7 +2294,7 @@ var InfiniteGrid = function (_Component) {
 
 
 	InfiniteGrid.prototype.append = function append(elements, groupKey) {
-		this._layout && this._insert(elements, _consts.APPEND, groupKey);
+		this._manager && this._insert(elements, _consts.APPEND, groupKey);
 		return this;
 	};
 	/**
@@ -2306,7 +2313,7 @@ var InfiniteGrid = function (_Component) {
 
 
 	InfiniteGrid.prototype.prepend = function prepend(elements, groupKey) {
-		this._layout && this._insert(elements, _consts.PREPEND, groupKey);
+		this._manager && this._insert(elements, _consts.PREPEND, groupKey);
 		return this;
 	};
 	/**
@@ -2357,20 +2364,20 @@ var InfiniteGrid = function (_Component) {
 		    horizontal = _options.horizontal;
 
 
-		if (!this._layout) {
-			this._layout = new _LayoutManager2["default"](this._items, this._renderer, {
+		if (!this._manager) {
+			this._manager = new _LayoutManager2["default"](this._items, this._renderer, {
 				attributePrefix: attributePrefix,
 				isEqualSize: isEqualSize,
 				isConstantSize: isConstantSize
 			});
 		}
 		if (typeof LayoutKlass === "function") {
-			this._layout.setLayout(new LayoutKlass(_extends(options, {
+			this._manager.setLayout(new LayoutKlass(_extends(options, {
 				horizontal: horizontal
 			})));
 		} else {
 			LayoutKlass.options.horizontal = horizontal;
-			this._layout.setLayout(LayoutKlass);
+			this._manager.setLayout(LayoutKlass);
 		}
 		this._renderer.resize();
 		this._setSize(this._renderer.getViewportSize());
@@ -2379,7 +2386,7 @@ var InfiniteGrid = function (_Component) {
 
 	InfiniteGrid.prototype._setSize = function _setSize(size) {
 		this._infinite.setSize(this._renderer.getViewSize());
-		this._layout.setSize(size);
+		this._manager.setSize(size);
 	};
 	/**
   * Returns the layouted items.
@@ -2446,7 +2453,7 @@ var InfiniteGrid = function (_Component) {
 	InfiniteGrid.prototype.layout = function layout() {
 		var isRelayout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
-		if (!this._layout) {
+		if (!this._manager) {
 			return this;
 		}
 		var renderer = this._renderer;
@@ -2475,13 +2482,14 @@ var InfiniteGrid = function (_Component) {
 		var data = isLayoutAll || !(isRelayout && isResize) ? itemManager.get() : itemManager.get(startCursor, endCursor);
 
 		// LayoutManger interface
-		this._layout.layout(isRelayout, data, isResize ? items : []);
+		this._manager.layout(isRelayout, data, isResize ? items : []);
 		if (isLayoutAll) {
 			this._fit();
 		} else if (isRelayout && isResize) {
 			itemManager.clearOutlines(startCursor, endCursor);
 		}
 		_DOMRenderer2["default"].renderItems(items);
+		isRelayout && this._watcher.setScrollPos();
 		this._onLayoutComplete({
 			items: items,
 			isAppend: _consts.APPEND,
@@ -2490,8 +2498,6 @@ var InfiniteGrid = function (_Component) {
 			useRecycle: false,
 			isLayout: true
 		});
-		isRelayout && this._watcher.setScrollPos();
-
 		return this;
 	};
 	/**
@@ -2967,7 +2973,7 @@ var InfiniteGrid = function (_Component) {
 
 		this._postLayout({
 			fromCache: fromCache,
-			groups: isAppend ? cache : cache.reverse(),
+			groups: cache,
 			items: items,
 			newItems: newItems,
 			isAppend: isAppend,
@@ -2997,7 +3003,7 @@ var InfiniteGrid = function (_Component) {
 
 		_DOMRenderer2["default"].createElements(items);
 		this._renderer[method](items);
-		this._layout[method]({
+		this._manager[method]({
 			groups: groups,
 			items: newItems,
 			isAppend: isAppend
@@ -3222,7 +3228,7 @@ var InfiniteGrid = function (_Component) {
 	InfiniteGrid.prototype.destroy = function destroy() {
 		this._infinite.clear();
 		this._watcher.destroy();
-		this._layout.destroy();
+		this._manager.destroy();
 		this._reset();
 		this._items.clear();
 		this._renderer.destroy();
@@ -3523,6 +3529,7 @@ var LayoutMananger = function () {
 		if (!groups.length) {
 			return;
 		}
+		var checkGroups = isAppend ? groups : groups.reverse();
 		var replaceTarget = [];
 		var removeTarget = [];
 		var elements = items.map(function (item) {
@@ -3538,7 +3545,7 @@ var LayoutMananger = function () {
 				if (!_this3._items) {
 					return;
 				}
-				_this3._complete(groups, items, isAppend, isUpdate, _complete2);
+				_this3._complete(checkGroups, items, isAppend, isUpdate, _complete2);
 			},
 			error: function error(_ref3) {
 				var target = _ref3.target,
