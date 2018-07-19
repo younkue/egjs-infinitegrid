@@ -90,7 +90,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 exports.__esModule = true;
-exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
+exports.TRANSITION_END = exports.TRANSITION = exports.TRANSFORM = exports.DEFENSE_BROWSER = exports.WEBKIT_VERSION = exports.PROCESSING = exports.LOADING_PREPEND = exports.LOADING_APPEND = exports.IDLE = exports.ALIGN = exports.isMobile = exports.agent = exports.DEFAULT_OPTIONS = exports.GROUPKEY_ATT = exports.DUMMY_POSITION = exports.SINGLE = exports.MULTI = exports.NO_TRUSTED = exports.TRUSTED = exports.NO_CACHE = exports.CACHE = exports.HORIZONTAL = exports.VERTICAL = exports.PREPEND = exports.APPEND = exports.TRANSITION_NAME = exports.IGNORE_CLASSNAME = exports.CONTAINER_CLASSNAME = exports.RETRY = exports.IS_ANDROID2 = exports.IS_IOS = exports.IS_IE = exports.SUPPORT_PASSIVE = exports.SUPPORT_ADDEVENTLISTENER = exports.SUPPORT_COMPUTEDSTYLE = undefined;
 
 var _browser = __webpack_require__(1);
 
@@ -119,6 +119,7 @@ var IS_ANDROID2 = exports.IS_ANDROID2 = /Android 2\./.test(ua);
 var RETRY = exports.RETRY = 3;
 var CONTAINER_CLASSNAME = exports.CONTAINER_CLASSNAME = "_eg-infinitegrid-container_";
 var IGNORE_CLASSNAME = exports.IGNORE_CLASSNAME = "_eg-infinitegrid-ignore_";
+var TRANSITION_NAME = exports.TRANSITION_NAME = "_INFINITEGRID_TRANSITION";
 
 var APPEND = exports.APPEND = true;
 var PREPEND = exports.PREPEND = false;
@@ -157,6 +158,31 @@ var webkit = /applewebkit\/([\d|.]*)/g.exec(agent);
 
 var WEBKIT_VERSION = exports.WEBKIT_VERSION = webkit && parseInt(webkit[1], 10) || 0;
 var DEFENSE_BROWSER = exports.DEFENSE_BROWSER = WEBKIT_VERSION && WEBKIT_VERSION < 537;
+
+var _ref = function () {
+	var properties = {
+		transitionend: "",
+		webkitTransitionEnd: "-webkit-",
+		oTransitionEnd: "-o-",
+		mozTransitionEnd: "-moz-"
+	};
+
+	for (var property in properties) {
+		var prefix = properties[property];
+
+		if ("on" + property.toLowerCase() in _browser.window) {
+			return [prefix + "transform", prefix + "transition", property];
+		}
+	}
+	return [];
+}();
+
+var TRANSFORM = _ref[0],
+    TRANSITION = _ref[1],
+    TRANSITION_END = _ref[2];
+exports.TRANSFORM = TRANSFORM;
+exports.TRANSITION = TRANSITION;
+exports.TRANSITION_END = TRANSITION_END;
 
 /***/ }),
 /* 1 */
@@ -508,6 +534,7 @@ exports.matchHTML = matchHTML;
 exports.$ = $;
 exports.addEvent = addEvent;
 exports.removeEvent = removeEvent;
+exports.addOnceEvent = addOnceEvent;
 exports.scroll = scroll;
 exports.scrollTo = scrollTo;
 exports.scrollBy = scrollBy;
@@ -516,6 +543,7 @@ exports.innerWidth = innerWidth;
 exports.innerHeight = innerHeight;
 exports.outerWidth = outerWidth;
 exports.outerHeight = outerHeight;
+exports.getSize = getSize;
 exports.getStyleNames = getStyleNames;
 exports.assignOptions = assignOptions;
 exports.toZeroArray = toZeroArray;
@@ -618,6 +646,14 @@ function removeEvent(element, type, handler) {
 		element["on" + type] = null;
 	}
 }
+function addOnceEvent(element, type, handler, eventListenerOptions) {
+	var callback = function callback(e) {
+		removeEvent(element, type, callback);
+		handler(e);
+	};
+
+	addEvent(element, type, callback, eventListenerOptions);
+}
 function scroll(el) {
 	var horizontal = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
@@ -682,6 +718,12 @@ function outerWidth(el) {
 }
 function outerHeight(el) {
 	return _getSize(el, "Height", true);
+}
+function getSize(el) {
+	return {
+		width: outerWidth(el),
+		height: outerHeight(el)
+	};
 }
 var STYLE = exports.STYLE = {
 	vertical: {
