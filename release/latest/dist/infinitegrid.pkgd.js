@@ -521,6 +521,9 @@ var ItemManager = function () {
 
 	ItemManager.selectItems = function selectItems(elements, selector) {
 		return elements.filter(function (v) {
+			if (v.nodeType !== 1) {
+				return false;
+			}
 			var classNames = v.className.split(" ");
 
 			if (classNames.some(function (c) {
