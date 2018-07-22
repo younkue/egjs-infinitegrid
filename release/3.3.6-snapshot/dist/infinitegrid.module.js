@@ -1185,6 +1185,7 @@ var Watcher = function () {
 		this.reset();
 		this._containerOffset = 0;
 		this._view = view;
+		this._scrollIssue = _consts.IS_IOS;
 		this._onCheck = this._onCheck.bind(this);
 		this._onResize = this._onResize.bind(this);
 		this.attachEvent();
@@ -1252,10 +1253,11 @@ var Watcher = function () {
 		this.setScrollPos(orgScrollPos);
 		var scrollPos = this.getScrollPos();
 
-		if (prevPos === null || _consts.IS_IOS && orgScrollPos === 0 || prevPos === scrollPos) {
+		if (prevPos === null || this._scrollIssue && orgScrollPos === 0 || prevPos === scrollPos) {
+			orgScrollPos && (this._scrollIssue = false);
 			return;
 		}
-
+		this._scrollIssue = false;
 		this.options.check({
 			isForward: prevPos < scrollPos,
 			scrollPos: scrollPos,
@@ -1297,6 +1299,7 @@ var Watcher = function () {
 	};
 
 	Watcher.prototype.detachEvent = function detachEvent() {
+		(0, _utils.removeEvent)(this._view, "scroll", this._onCheck);
 		(0, _utils.removeEvent)(window, "resize", this._onResize);
 	};
 
@@ -1852,6 +1855,10 @@ var LayoutMananger = function () {
 
 			return item.orgSize && item.rect.top > _consts.DUMMY_POSITION / 10;
 		});
+
+		if (!layoutGroups.length) {
+			return [];
+		}
 		var outline = layoutGroups[0].outlines.start;
 
 		if (isRelayout) {
@@ -1861,7 +1868,7 @@ var LayoutMananger = function () {
 			}
 		}
 		this._layout.layout(layoutGroups, outline);
-		return this;
+		return layoutGroups;
 	};
 
 	LayoutMananger.prototype.destroy = function destroy() {
@@ -2426,7 +2433,7 @@ module.exports = exports["default"];
 
 
 exports.__esModule = true;
-exports.LayoutManger = exports.ItemManager = exports.Watcher = exports.DOMRenderer = exports.AutoSizer = exports.ImageLoaded = exports.Infinite = exports.JustifiedLayout = exports.PackingLayout = exports.SquareLayout = exports.FrameLayout = exports.GridLayout = undefined;
+exports.LayoutManager = exports.ItemManager = exports.Watcher = exports.DOMRenderer = exports.AutoSizer = exports.ImageLoaded = exports.Infinite = exports.JustifiedLayout = exports.PackingLayout = exports.SquareLayout = exports.FrameLayout = exports.GridLayout = undefined;
 
 var _InfiniteGrid = __webpack_require__(12);
 
@@ -2493,10 +2500,10 @@ exports.AutoSizer = _AutoSizer2["default"];
 exports.DOMRenderer = _DOMRenderer2["default"];
 exports.Watcher = _Watcher2["default"];
 exports.ItemManager = _ItemManager2["default"];
-exports.LayoutManger = _LayoutManager2["default"]; /**
-                                                    * Copyright (c) NAVER Corp.
-                                                    * egjs-infinitegrid projects are licensed under the MIT license
-                                                    */
+exports.LayoutManager = _LayoutManager2["default"]; /**
+                                                     * Copyright (c) NAVER Corp.
+                                                     * egjs-infinitegrid projects are licensed under the MIT license
+                                                     */
 
 exports["default"] = _InfiniteGrid2["default"];
 
@@ -2959,6 +2966,8 @@ var InfiniteGrid = function (_Component) {
 	/**
   * Returns the current state of a module such as location information. You can use the setStatus() method to restore the information returned through a call to this method.
   * @ko 카드의 위치 정보 등 모듈의 현재 상태 정보를 반환한다. 이 메서드가 반환한 정보를 저장해 두었다가 setStatus() 메서드로 복원할 수 있다
+  * @param {String|Number} [startKey] The start groupKey to retrieve a subset of information <ko>정보를 일부만 가져오기 위한 처음 그룹키</ko>
+  * @param {String|Number} [endKey] The end groupKey to retrieve a subset of information <ko>정보를 일부만 가져오기 위한 마지막 그룹키</ko>
   * @return {Object} State object of the eg.InfiniteGrid module<ko>eg.InfiniteGrid 모듈의 상태 객체</ko>
   */
 
@@ -3034,7 +3043,6 @@ var InfiniteGrid = function (_Component) {
 				this.layout(true);
 			} else {
 				this._items.clearOutlines();
-				this._process(_consts.PROCESSING);
 				this._postLayout({
 					fromCache: true,
 					groups: isEqualSize ? items.get() : infinite.getVisibleData(),

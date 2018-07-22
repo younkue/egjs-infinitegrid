@@ -16,7 +16,7 @@
 		exports["InfiniteGrid"] = factory(require("@egjs/component"));
 	else
 		root["eg"] = root["eg"] || {}, root["eg"]["InfiniteGrid"] = factory(root["eg"]["Component"]);
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_12__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_13__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -79,7 +79,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -473,7 +473,7 @@ var win = window;
 
 exports.window = win;
 var document = exports.document = win.document;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 3 */
@@ -1185,6 +1185,7 @@ var Watcher = function () {
 		this.reset();
 		this._containerOffset = 0;
 		this._view = view;
+		this._scrollIssue = _consts.IS_IOS;
 		this._onCheck = this._onCheck.bind(this);
 		this._onResize = this._onResize.bind(this);
 		this.attachEvent();
@@ -1252,10 +1253,11 @@ var Watcher = function () {
 		this.setScrollPos(orgScrollPos);
 		var scrollPos = this.getScrollPos();
 
-		if (prevPos === null || _consts.IS_IOS && orgScrollPos === 0 || prevPos === scrollPos) {
+		if (prevPos === null || this._scrollIssue && orgScrollPos === 0 || prevPos === scrollPos) {
+			orgScrollPos && (this._scrollIssue = false);
 			return;
 		}
-
+		this._scrollIssue = false;
 		this.options.check({
 			isForward: prevPos < scrollPos,
 			scrollPos: scrollPos,
@@ -1297,6 +1299,7 @@ var Watcher = function () {
 	};
 
 	Watcher.prototype.detachEvent = function detachEvent() {
+		(0, _utils.removeEvent)(this._view, "scroll", this._onCheck);
 		(0, _utils.removeEvent)(window, "resize", this._onResize);
 	};
 
@@ -1555,6 +1558,338 @@ module.exports = exports["default"];
 
 
 exports.__esModule = true;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _AutoSizer = __webpack_require__(5);
+
+var _AutoSizer2 = _interopRequireDefault(_AutoSizer);
+
+var _ImageLoaded = __webpack_require__(9);
+
+var _ImageLoaded2 = _interopRequireDefault(_ImageLoaded);
+
+var _ItemManager = __webpack_require__(3);
+
+var _ItemManager2 = _interopRequireDefault(_ItemManager);
+
+var _utils = __webpack_require__(0);
+
+var _consts = __webpack_require__(1);
+
+var _DOMRenderer = __webpack_require__(4);
+
+var _DOMRenderer2 = _interopRequireDefault(_DOMRenderer);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function hasTarget(target, value) {
+	return ~target.indexOf(value);
+}
+
+var LayoutMananger = function () {
+	function LayoutMananger(items, renderer) {
+		var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+		_classCallCheck(this, LayoutMananger);
+
+		_extends(this.options = {
+			attributePrefix: "data-",
+			isEqualSize: false,
+			isConstantSize: false,
+			horizontal: false
+		}, options);
+
+		this._items = items;
+		this._renderer = renderer;
+		this._layout = null;
+	}
+
+	LayoutMananger.prototype.setLayout = function setLayout(layout) {
+		this._layout = layout;
+	};
+
+	LayoutMananger.prototype.setSize = function setSize(size) {
+		this._layout.setSize(size);
+	};
+
+	LayoutMananger.prototype._complete = function _complete(groups, items, isAppend, isUpdate, callback) {
+		var _this = this;
+
+		var itemManager = this._items;
+		var cursor = isAppend ? "end" : "start";
+		var groupIndex = itemManager.indexOf(groups[0]);
+		var prevGroup = itemManager.getData(groupIndex + (isAppend ? -1 : 1));
+		var outline = prevGroup ? prevGroup.outlines[cursor] : [0];
+
+		this._renderer.updateSize(items);
+
+		var groupInfos = groups.map(function (group) {
+			var groupOutline = group.outlines[isAppend ? "start" : "end"];
+			var isRelayout = isUpdate || !outline.length || (outline.length === groupOutline.length ? !outline.every(function (v, index) {
+				return v === groupOutline[index];
+			}) : true);
+
+			if (!isRelayout) {
+				outline = group.outlines[isAppend ? "end" : "start"];
+				_DOMRenderer2["default"].renderItems(group.items);
+				return group;
+			}
+			var groupItems = group.items;
+			var groupInfo = _this._layout[isAppend ? "append" : "prepend"](groupItems, outline, true);
+
+			_extends(group, groupInfo);
+			_DOMRenderer2["default"].renderItems(groupInfo.items);
+			outline = groupInfo.outlines[isAppend ? "end" : "start"];
+
+			return groupInfo;
+		});
+
+		callback({
+			groups: groupInfos,
+			items: items,
+			isAppend: isAppend
+		});
+	};
+
+	LayoutMananger.prototype._error = function _error(removeTarget, replaceTarget, target, items, errorIndex, callback) {
+		var item = items[errorIndex];
+		var element = item.el;
+		var prefix = this.options.attributePrefix;
+
+		// remove item
+		var removeItem = function removeItem() {
+			if (hasTarget(removeTarget, element)) {
+				return;
+			}
+			removeTarget.push(element);
+			var index = replaceTarget.indexOf(errorIndex);
+
+			index !== -1 && replaceTarget.splice(index, 1);
+		};
+		// remove image
+		var remove = function remove() {
+			if (target === element) {
+				removeItem();
+				return;
+			}
+			if (hasTarget(removeTarget, element)) {
+				return;
+			}
+			target.parentNode.removeChild(target);
+			item.content = element.outerHTML;
+			if (hasTarget(replaceTarget, errorIndex)) {
+				return;
+			}
+			replaceTarget.push(errorIndex);
+		};
+		// replace image
+		var replace = function replace(src) {
+			if (hasTarget(removeTarget, element)) {
+				return;
+			}
+			if (src) {
+				if ((0, _utils.matchHTML)(src) || (typeof src === "undefined" ? "undefined" : _typeof(src)) === "object") {
+					var parentNode = target.parentNode;
+
+					parentNode.insertBefore((0, _utils.$)(src), target);
+					parentNode.removeChild(target);
+					item.content = element.outerHTML;
+				} else {
+					target.src = src;
+					if (target.getAttribute(prefix + "width")) {
+						_AutoSizer2["default"].remove(target);
+						target.removeAttribute(prefix + "width");
+						target.removeAttribute(prefix + "height");
+					}
+				}
+			}
+			item.content = element.outerHTML;
+			if (hasTarget(replaceTarget, errorIndex)) {
+				return;
+			}
+			replaceTarget.push(errorIndex);
+		};
+		// replace item
+		var replaceItem = function replaceItem(content) {
+			if (hasTarget(removeTarget, element)) {
+				return;
+			}
+			element.innerHTML = content;
+			item.content = element.outerHTML;
+			if (hasTarget(replaceTarget, errorIndex)) {
+				return;
+			}
+			replaceTarget.push(errorIndex);
+		};
+
+		callback({
+			target: target,
+			element: element,
+			items: items,
+			item: item,
+			itemIndex: errorIndex,
+			replace: replace,
+			replaceItem: replaceItem,
+			remove: remove,
+			removeItem: removeItem
+		});
+	};
+
+	LayoutMananger.prototype._end = function _end(removeTarget, replaceTarget, items, callback) {
+		var _this2 = this;
+
+		var attributePrefix = this.options.attributePrefix;
+
+
+		var removeTargetLength = removeTarget.length;
+		var replaceTargetLength = replaceTarget.length;
+
+		if (!removeTargetLength && !replaceTargetLength) {
+			callback({ remove: [] });
+			return;
+		}
+		var layoutedItems = replaceTarget.map(function (itemIndex) {
+			return items[itemIndex];
+		});
+
+		if (!replaceTargetLength) {
+			callback({ remove: removeTarget, layout: true });
+			return;
+		}
+		// wait layoutComplete beacause of error event.
+		_ImageLoaded2["default"].check(layoutedItems.map(function (v) {
+			return v.el;
+		}), {
+			prefix: attributePrefix,
+			complete: function complete() {
+				_this2._renderer.updateSize(layoutedItems);
+				callback({ remove: removeTarget, layout: true });
+			}
+		});
+	};
+
+	LayoutMananger.prototype._insert = function _insert(_ref, _ref2) {
+		var _this3 = this;
+
+		var groups = _ref.groups,
+		    _ref$items = _ref.items,
+		    items = _ref$items === undefined ? _ItemManager2["default"].pluck(groups, "items") : _ref$items,
+		    isAppend = _ref.isAppend,
+		    isUpdate = _ref.isUpdate;
+
+		var _ref2$error = _ref2.error,
+		    _error2 = _ref2$error === undefined ? function () {} : _ref2$error,
+		    _ref2$complete = _ref2.complete,
+		    _complete2 = _ref2$complete === undefined ? function () {} : _ref2$complete,
+		    _ref2$end = _ref2.end,
+		    _end2 = _ref2$end === undefined ? function () {} : _ref2$end;
+
+		if (!groups.length) {
+			return;
+		}
+		var checkGroups = isAppend ? groups : groups.reverse();
+		var replaceTarget = [];
+		var removeTarget = [];
+		var elements = items.map(function (item) {
+			return item.el;
+		});
+		var type = this.options.isEqualSize && this._renderer._size.item ? _ImageLoaded.CHECK_ONLY_ERROR : _ImageLoaded.CHECK_ALL;
+		var prefix = this.options.attributePrefix;
+
+		_ImageLoaded2["default"].check(elements, {
+			prefix: prefix,
+			type: type,
+			complete: function complete() {
+				if (!_this3._items) {
+					return;
+				}
+				_this3._complete(checkGroups, items, isAppend, isUpdate, _complete2);
+			},
+			error: function error(_ref3) {
+				var target = _ref3.target,
+				    itemIndex = _ref3.itemIndex;
+
+				if (!_this3._items) {
+					return;
+				}
+				_this3._error(removeTarget, replaceTarget, target, items, itemIndex, _error2);
+			},
+			end: function end() {
+				if (!_this3._items) {
+					return;
+				}
+				_this3._end(removeTarget, replaceTarget, items, _end2);
+			}
+		});
+	};
+
+	LayoutMananger.prototype.append = function append(_ref4) {
+		var groups = _ref4.groups,
+		    items = _ref4.items,
+		    isUpdate = _ref4.isUpdate;
+		var callbacks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+		this._insert({ groups: groups, items: items, isUpdate: isUpdate, isAppend: true }, callbacks);
+	};
+
+	LayoutMananger.prototype.prepend = function prepend(_ref5) {
+		var groups = _ref5.groups,
+		    items = _ref5.items,
+		    isUpdate = _ref5.isUpdate;
+		var callbacks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+		this._insert({ groups: groups, items: items, isUpdate: isUpdate, isAppend: false }, callbacks);
+	};
+
+	LayoutMananger.prototype.layout = function layout(isRelayout, groups, items) {
+		var renderer = this._renderer;
+		var isConstantSize = renderer.options.isConstantSize;
+
+		var layoutGroups = groups.filter(function (group) {
+			var item = group.items[0];
+
+			return item.orgSize && item.rect.top > _consts.DUMMY_POSITION / 10;
+		});
+
+		if (!layoutGroups.length) {
+			return [];
+		}
+		var outline = layoutGroups[0].outlines.start;
+
+		if (isRelayout) {
+			outline = [outline.length ? Math.min.apply(Math, outline) : 0];
+			if (!isConstantSize && items.length) {
+				renderer.updateSize(items);
+			}
+		}
+		this._layout.layout(layoutGroups, outline);
+		return layoutGroups;
+	};
+
+	LayoutMananger.prototype.destroy = function destroy() {
+		this._items = null;
+		this._renderer = null;
+	};
+
+	return LayoutMananger;
+}();
+
+exports["default"] = LayoutMananger;
+module.exports = exports["default"];
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
 exports.CHECK_ONLY_ERROR = exports.CHECK_ALL = undefined;
 
 var _consts = __webpack_require__(1);
@@ -1706,7 +2041,7 @@ var ImageLoaded = function () {
 exports["default"] = ImageLoaded;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2091,13 +2426,13 @@ exports["default"] = FrameLayout;
 module.exports = exports["default"];
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _InfiniteGrid = __webpack_require__(11);
+var _InfiniteGrid = __webpack_require__(12);
 
 var _InfiniteGrid2 = _interopRequireDefault(_InfiniteGrid);
 
@@ -2105,7 +2440,7 @@ var _GridLayout = __webpack_require__(15);
 
 var _GridLayout2 = _interopRequireDefault(_GridLayout);
 
-var _FrameLayout = __webpack_require__(9);
+var _FrameLayout = __webpack_require__(10);
 
 var _FrameLayout2 = _interopRequireDefault(_FrameLayout);
 
@@ -2125,7 +2460,7 @@ var _Infinite = __webpack_require__(7);
 
 var _Infinite2 = _interopRequireDefault(_Infinite);
 
-var _ImageLoaded = __webpack_require__(8);
+var _ImageLoaded = __webpack_require__(9);
 
 var _ImageLoaded2 = _interopRequireDefault(_ImageLoaded);
 
@@ -2145,13 +2480,17 @@ var _ItemManager = __webpack_require__(3);
 
 var _ItemManager2 = _interopRequireDefault(_ItemManager);
 
+var _LayoutManager = __webpack_require__(8);
+
+var _LayoutManager2 = _interopRequireDefault(_LayoutManager);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-/**
- * Copyright (c) NAVER Corp.
- * egjs-infinitegrid projects are licensed under the MIT license
- */
-_InfiniteGrid2["default"].Infinite = _Infinite2["default"];
+_InfiniteGrid2["default"].Infinite = _Infinite2["default"]; /**
+                                                             * Copyright (c) NAVER Corp.
+                                                             * egjs-infinitegrid projects are licensed under the MIT license
+                                                             */
+
 _InfiniteGrid2["default"].GridLayout = _GridLayout2["default"];
 _InfiniteGrid2["default"].FrameLayout = _FrameLayout2["default"];
 _InfiniteGrid2["default"].SquareLayout = _SquareLayout2["default"];
@@ -2162,11 +2501,12 @@ _InfiniteGrid2["default"].AutoSizer = _AutoSizer2["default"];
 _InfiniteGrid2["default"].DOMRenderer = _DOMRenderer2["default"];
 _InfiniteGrid2["default"].Watcher = _Watcher2["default"];
 _InfiniteGrid2["default"].ItemManager = _ItemManager2["default"];
+_InfiniteGrid2["default"].LayoutManager = _LayoutManager2["default"];
 
 module.exports = _InfiniteGrid2["default"];
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2182,7 +2522,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                                                                                                                                                                                                                                                                               */
 
 
-var _component = __webpack_require__(12);
+var _component = __webpack_require__(13);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -2206,7 +2546,7 @@ var _Infinite2 = _interopRequireDefault(_Infinite);
 
 var _utils = __webpack_require__(0);
 
-var _LayoutManager = __webpack_require__(14);
+var _LayoutManager = __webpack_require__(8);
 
 var _LayoutManager2 = _interopRequireDefault(_LayoutManager);
 
@@ -2624,6 +2964,8 @@ var InfiniteGrid = function (_Component) {
 	/**
   * Returns the current state of a module such as location information. You can use the setStatus() method to restore the information returned through a call to this method.
   * @ko 카드의 위치 정보 등 모듈의 현재 상태 정보를 반환한다. 이 메서드가 반환한 정보를 저장해 두었다가 setStatus() 메서드로 복원할 수 있다
+  * @param {String|Number} [startKey] The start groupKey to retrieve a subset of information <ko>정보를 일부만 가져오기 위한 처음 그룹키</ko>
+  * @param {String|Number} [endKey] The end groupKey to retrieve a subset of information <ko>정보를 일부만 가져오기 위한 마지막 그룹키</ko>
   * @return {Object} State object of the eg.InfiniteGrid module<ko>eg.InfiniteGrid 모듈의 상태 객체</ko>
   */
 
@@ -2699,7 +3041,6 @@ var InfiniteGrid = function (_Component) {
 				this.layout(true);
 			} else {
 				this._items.clearOutlines();
-				this._process(_consts.PROCESSING);
 				this._postLayout({
 					fromCache: true,
 					groups: isEqualSize ? items.get() : infinite.getVisibleData(),
@@ -3410,13 +3751,13 @@ exports["default"] = InfiniteGrid;
 module.exports = exports["default"];
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_12__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_13__;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3441,334 +3782,6 @@ try {
 
 module.exports = g;
 
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _AutoSizer = __webpack_require__(5);
-
-var _AutoSizer2 = _interopRequireDefault(_AutoSizer);
-
-var _ImageLoaded = __webpack_require__(8);
-
-var _ImageLoaded2 = _interopRequireDefault(_ImageLoaded);
-
-var _ItemManager = __webpack_require__(3);
-
-var _ItemManager2 = _interopRequireDefault(_ItemManager);
-
-var _utils = __webpack_require__(0);
-
-var _consts = __webpack_require__(1);
-
-var _DOMRenderer = __webpack_require__(4);
-
-var _DOMRenderer2 = _interopRequireDefault(_DOMRenderer);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function hasTarget(target, value) {
-	return ~target.indexOf(value);
-}
-
-var LayoutMananger = function () {
-	function LayoutMananger(items, renderer) {
-		var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-		_classCallCheck(this, LayoutMananger);
-
-		_extends(this.options = {
-			attributePrefix: "data-",
-			isEqualSize: false,
-			isConstantSize: false,
-			horizontal: false
-		}, options);
-
-		this._items = items;
-		this._renderer = renderer;
-		this._layout = null;
-	}
-
-	LayoutMananger.prototype.setLayout = function setLayout(layout) {
-		this._layout = layout;
-	};
-
-	LayoutMananger.prototype.setSize = function setSize(size) {
-		this._layout.setSize(size);
-	};
-
-	LayoutMananger.prototype._complete = function _complete(groups, items, isAppend, isUpdate, callback) {
-		var _this = this;
-
-		var itemManager = this._items;
-		var cursor = isAppend ? "end" : "start";
-		var groupIndex = itemManager.indexOf(groups[0]);
-		var prevGroup = itemManager.getData(groupIndex + (isAppend ? -1 : 1));
-		var outline = prevGroup ? prevGroup.outlines[cursor] : [0];
-
-		this._renderer.updateSize(items);
-
-		var groupInfos = groups.map(function (group) {
-			var groupOutline = group.outlines[isAppend ? "start" : "end"];
-			var isRelayout = isUpdate || !outline.length || (outline.length === groupOutline.length ? !outline.every(function (v, index) {
-				return v === groupOutline[index];
-			}) : true);
-
-			if (!isRelayout) {
-				outline = group.outlines[isAppend ? "end" : "start"];
-				_DOMRenderer2["default"].renderItems(group.items);
-				return group;
-			}
-			var groupItems = group.items;
-			var groupInfo = _this._layout[isAppend ? "append" : "prepend"](groupItems, outline, true);
-
-			_extends(group, groupInfo);
-			_DOMRenderer2["default"].renderItems(groupInfo.items);
-			outline = groupInfo.outlines[isAppend ? "end" : "start"];
-
-			return groupInfo;
-		});
-
-		callback({
-			groups: groupInfos,
-			items: items,
-			isAppend: isAppend
-		});
-	};
-
-	LayoutMananger.prototype._error = function _error(removeTarget, replaceTarget, target, items, errorIndex, callback) {
-		var item = items[errorIndex];
-		var element = item.el;
-		var prefix = this.options.attributePrefix;
-
-		// remove item
-		var removeItem = function removeItem() {
-			if (hasTarget(removeTarget, element)) {
-				return;
-			}
-			removeTarget.push(element);
-			var index = replaceTarget.indexOf(errorIndex);
-
-			index !== -1 && replaceTarget.splice(index, 1);
-		};
-		// remove image
-		var remove = function remove() {
-			if (target === element) {
-				removeItem();
-				return;
-			}
-			if (hasTarget(removeTarget, element)) {
-				return;
-			}
-			target.parentNode.removeChild(target);
-			item.content = element.outerHTML;
-			if (hasTarget(replaceTarget, errorIndex)) {
-				return;
-			}
-			replaceTarget.push(errorIndex);
-		};
-		// replace image
-		var replace = function replace(src) {
-			if (hasTarget(removeTarget, element)) {
-				return;
-			}
-			if (src) {
-				if ((0, _utils.matchHTML)(src) || (typeof src === "undefined" ? "undefined" : _typeof(src)) === "object") {
-					var parentNode = target.parentNode;
-
-					parentNode.insertBefore((0, _utils.$)(src), target);
-					parentNode.removeChild(target);
-					item.content = element.outerHTML;
-				} else {
-					target.src = src;
-					if (target.getAttribute(prefix + "width")) {
-						_AutoSizer2["default"].remove(target);
-						target.removeAttribute(prefix + "width");
-						target.removeAttribute(prefix + "height");
-					}
-				}
-			}
-			item.content = element.outerHTML;
-			if (hasTarget(replaceTarget, errorIndex)) {
-				return;
-			}
-			replaceTarget.push(errorIndex);
-		};
-		// replace item
-		var replaceItem = function replaceItem(content) {
-			if (hasTarget(removeTarget, element)) {
-				return;
-			}
-			element.innerHTML = content;
-			item.content = element.outerHTML;
-			if (hasTarget(replaceTarget, errorIndex)) {
-				return;
-			}
-			replaceTarget.push(errorIndex);
-		};
-
-		callback({
-			target: target,
-			element: element,
-			items: items,
-			item: item,
-			itemIndex: errorIndex,
-			replace: replace,
-			replaceItem: replaceItem,
-			remove: remove,
-			removeItem: removeItem
-		});
-	};
-
-	LayoutMananger.prototype._end = function _end(removeTarget, replaceTarget, items, callback) {
-		var _this2 = this;
-
-		var attributePrefix = this.options.attributePrefix;
-
-
-		var removeTargetLength = removeTarget.length;
-		var replaceTargetLength = replaceTarget.length;
-
-		if (!removeTargetLength && !replaceTargetLength) {
-			callback({ remove: [] });
-			return;
-		}
-		var layoutedItems = replaceTarget.map(function (itemIndex) {
-			return items[itemIndex];
-		});
-
-		if (!replaceTargetLength) {
-			callback({ remove: removeTarget, layout: true });
-			return;
-		}
-		// wait layoutComplete beacause of error event.
-		_ImageLoaded2["default"].check(layoutedItems.map(function (v) {
-			return v.el;
-		}), {
-			prefix: attributePrefix,
-			complete: function complete() {
-				_this2._renderer.updateSize(layoutedItems);
-				callback({ remove: removeTarget, layout: true });
-			}
-		});
-	};
-
-	LayoutMananger.prototype._insert = function _insert(_ref, _ref2) {
-		var _this3 = this;
-
-		var groups = _ref.groups,
-		    _ref$items = _ref.items,
-		    items = _ref$items === undefined ? _ItemManager2["default"].pluck(groups, "items") : _ref$items,
-		    isAppend = _ref.isAppend,
-		    isUpdate = _ref.isUpdate;
-
-		var _ref2$error = _ref2.error,
-		    _error2 = _ref2$error === undefined ? function () {} : _ref2$error,
-		    _ref2$complete = _ref2.complete,
-		    _complete2 = _ref2$complete === undefined ? function () {} : _ref2$complete,
-		    _ref2$end = _ref2.end,
-		    _end2 = _ref2$end === undefined ? function () {} : _ref2$end;
-
-		if (!groups.length) {
-			return;
-		}
-		var checkGroups = isAppend ? groups : groups.reverse();
-		var replaceTarget = [];
-		var removeTarget = [];
-		var elements = items.map(function (item) {
-			return item.el;
-		});
-		var type = this.options.isEqualSize && this._renderer._size.item ? _ImageLoaded.CHECK_ONLY_ERROR : _ImageLoaded.CHECK_ALL;
-		var prefix = this.options.attributePrefix;
-
-		_ImageLoaded2["default"].check(elements, {
-			prefix: prefix,
-			type: type,
-			complete: function complete() {
-				if (!_this3._items) {
-					return;
-				}
-				_this3._complete(checkGroups, items, isAppend, isUpdate, _complete2);
-			},
-			error: function error(_ref3) {
-				var target = _ref3.target,
-				    itemIndex = _ref3.itemIndex;
-
-				if (!_this3._items) {
-					return;
-				}
-				_this3._error(removeTarget, replaceTarget, target, items, itemIndex, _error2);
-			},
-			end: function end() {
-				if (!_this3._items) {
-					return;
-				}
-				_this3._end(removeTarget, replaceTarget, items, _end2);
-			}
-		});
-	};
-
-	LayoutMananger.prototype.append = function append(_ref4) {
-		var groups = _ref4.groups,
-		    items = _ref4.items,
-		    isUpdate = _ref4.isUpdate;
-		var callbacks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-		this._insert({ groups: groups, items: items, isUpdate: isUpdate, isAppend: true }, callbacks);
-	};
-
-	LayoutMananger.prototype.prepend = function prepend(_ref5) {
-		var groups = _ref5.groups,
-		    items = _ref5.items,
-		    isUpdate = _ref5.isUpdate;
-		var callbacks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-		this._insert({ groups: groups, items: items, isUpdate: isUpdate, isAppend: false }, callbacks);
-	};
-
-	LayoutMananger.prototype.layout = function layout(isRelayout, groups, items) {
-		var renderer = this._renderer;
-		var isConstantSize = renderer.options.isConstantSize;
-
-		var layoutGroups = groups.filter(function (group) {
-			var item = group.items[0];
-
-			return item.orgSize && item.rect.top > _consts.DUMMY_POSITION / 10;
-		});
-		var outline = layoutGroups[0].outlines.start;
-
-		if (isRelayout) {
-			outline = [outline.length ? Math.min.apply(Math, outline) : 0];
-			if (!isConstantSize && items.length) {
-				renderer.updateSize(items);
-			}
-		}
-		this._layout.layout(layoutGroups, outline);
-		return this;
-	};
-
-	LayoutMananger.prototype.destroy = function destroy() {
-		this._items = null;
-		this._renderer = null;
-	};
-
-	return LayoutMananger;
-}();
-
-exports["default"] = LayoutMananger;
-module.exports = exports["default"];
 
 /***/ }),
 /* 15 */
@@ -4063,7 +4076,7 @@ module.exports = exports["default"];
 
 exports.__esModule = true;
 
-var _FrameLayout2 = __webpack_require__(9);
+var _FrameLayout2 = __webpack_require__(10);
 
 var _FrameLayout3 = _interopRequireDefault(_FrameLayout2);
 
