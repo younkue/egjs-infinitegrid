@@ -55,6 +55,7 @@ var demoIg;
 			demoIg.append(getItems(groups[groupKey].slice(0, -1)), groupKey);
 		},
 		"refresh": function (e) {
+			demoIg._watcher.resize();
 			demoIg.layout(true);
 			if (!demoIg.getItems().length) {
 				demoIg.startLoading(true);

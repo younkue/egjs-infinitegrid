@@ -926,7 +926,7 @@ table td img {
 
 @keyframes dot {
   0% {
-    
+    background: #fff;
   }
   60% {
     background: #999;
