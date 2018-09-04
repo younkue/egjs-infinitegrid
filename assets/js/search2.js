@@ -21,12 +21,11 @@ var ig = new eg.InfiniteGrid(contents, {
 	isOverflowScroll: true
 });
 
-var layout = new eg.InfiniteGrid.JustifiedLayout({
+ig.setLayout(eg.InfiniteGrid.JustifiedLayout, {
 	minSize: 100,
 	maxSize: 300,
-	margin: 10
+	margin: 10,
 });
-ig.setLayout(layout);
 
 container.insertAdjacentHTML("beforeend", '<div id="prepend"></div><div id="append"></div>');
 var prepend = document.getElementById("prepend");

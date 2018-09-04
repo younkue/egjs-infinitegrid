@@ -1,35 +1,47 @@
 (function() {
-		var receiveTemplate = '<div class="item receive">' +
-		'<div class="profile" data-name="egjs">' +
-			'<img src="../image/1.jpg" />' +
-		'</div>' +
-		'<div class="speech" data-time="10:00">' +
-			'<p>${title}</p>' +
-		'</div>' +
-		'</div>';
-		var sendTemplate = '<div class="item send">' +
-		'<div class="speech" data-time="10:00">' +
-			'<p>${title}</p>' + 
-		'</div>' +
-		'</div>';
+	function receive(options) {
+		var no = options.no || 1;
+		var title = options.title || "egjs post";
+		var time = options.time || "10:00 AM";
 
-	function getItem(template, options) {
-		return template.replace(/\$\{([^\}]*)\}/g, function () {
-			var replaceTarget = arguments[1];
-	
-			return options[replaceTarget];
-		});
+		var item = `<div class="item receive">
+		<div class="profile" data-name="egjs">
+			<img src="../image/1.jpg" />
+		</div>
+		<div class="speech" data-time="${time}">
+			<p>
+				${title}
+			</p>
+		</div>
+		</div>`;
+			
+		return item;
 	}
+	function send(options) {
+		var title = options.title || "egjs post";
+		var time = options.time || "10:00 AM";
+	
+		var item = `<div class="item send">
+		<div class="speech" data-time="${time}">
+			<p>
+				${title}
+			</p>
+		</div>
+		</div>`;
+
+		return item;
+	}
+	var no = 1;
 	function getItems(length) {
 		var arr = [];
-
 		for (let i = 0; i < length; ++i) {
-			arr.push(getItem(receiveTemplate, {title: "egjs post" + i}));
+			arr.push(receive({ no: i + no, title: "egjs post" + i}));
 		}
+		no += length;
+
 		return arr;
 	}
-	var view = document.querySelector(".container");
-	var ig = new eg.InfiniteGrid(view, {
+	var ig = new eg.InfiniteGrid(document.querySelector(".container"), {
 		direction: "vertical",
 		isOverflowScroll: true,	
 	});
@@ -38,15 +50,16 @@
 	});
 	ig.on("layoutComplete", function(e) {
 		var isAppend = e.isAppend;
-		var scrollPos = e.scrollPos;
-		
+		var view = ig._infinite._renderer.view;
+		var pos = ig._infinite._watcher._prevPos;
 		if (isAppend) {
-			view.scrollTop = scrollPos + 200;
+			view.scrollTop = pos + 200;
 		}
 	});
+	var groupKey = 1;
 	ig.on("prepend", function (e) {
 		var items = getItems(20);
-		ig.prepend(items);
+		ig.prepend(items, ++groupKey);
 		no += 20;
 	});
 	
@@ -55,7 +68,7 @@
 		if (!text) {
 			return;
 		}
-		ig.append([getItem(sendTemplate, { title: text }), getItem(receiveTemplate, { title: text })]);
+		ig.append([send({ title: text }), receive({ title: text })], ++groupKey);
 	};
 	input.addEventListener("keyup", function(e) {
 		if (e.keyCode !== 13) {
@@ -71,9 +84,8 @@
 		input.value = "";
 	});
 	var items = getItems(30);
-
-	ig.prepend(items);
+	ig.prepend(items, ++groupKey);
 	setTimeout(function() {
-		ig.append(sendMessage("hi egjs!!!"));
+		ig.append(sendMessage("hi egjs!!!"), ++groupKey);
 	}, 100);
 })();

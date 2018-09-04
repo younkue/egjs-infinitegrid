@@ -20,11 +20,10 @@ function getItems(no, length) {
 var ig = new eg.InfiniteGrid(".gallery", {
 	count: 140,
 });
-var layout = new eg.InfiniteGrid.SquareLayout({
+ig.setLayout(eg.InfiniteGrid.SquareLayout, {
 	column: 4,
 	margin: 10,
 });
-ig.setLayout(layout);
 
 ig.on({
 	"append": function (e) {
