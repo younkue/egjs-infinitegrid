@@ -55,7 +55,7 @@
 		if (!text) {
 			return;
 		}
-		ig.append([getItem(sendTemplate, { title: text }), getItem(receiveTemplate, { title: text, lin: link })]);
+		ig.append([getItem(sendTemplate, { title: text }), getItem(receiveTemplate, { title: text, link: link })]);
 	};
 	input.addEventListener("keyup", function(e) {
 		if (e.keyCode !== 13) {
