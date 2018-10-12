@@ -7,7 +7,7 @@ import PackingLayout from "../../src/layouts/PackingLayout";
 import JustifiedLayout from "../../src/layouts/JustifiedLayout";
 import { getItems, insert, wait, waitInsert, waitEvent } from "./helper/TestHelper";
 import { APPEND, PREPEND, LOADING_APPEND, LOADING_PREPEND, DEFENSE_BROWSER, IDLE, PROCESSING, DUMMY_POSITION } from "../../src/consts";
-import { innerHeight, innerWidth } from "../../src/utils";
+import { scroll, innerHeight, innerWidth } from "../../src/utils";
 import { expectConnectGroupsOutline } from "./helper/common";
 
 /* eslint-disable */
@@ -465,7 +465,7 @@ describe("InfiniteGrid Test", function () {
       // Given
       const scrollPos = document.body.offsetHeight - window.innerHeight;
 
-      console.log(Math.max(document.body.scrollTop, document.documentElement.scrollTop), document.body.offsetHeight, window.innerHeight);
+      console.log(scroll(window), document.body.offsetHeight, window.innerHeight);
 
       // When
       window.scrollTo(0, scrollPos);
@@ -474,7 +474,7 @@ describe("InfiniteGrid Test", function () {
       await waitInsert(this.inst, true, 10, 4);
 
       // Then
-      expect(Math.max(document.body.scrollTop, document.documentElement.scrollTop)).to.be.equals(scrollPos);
+      expect(scroll(window)).to.be.equals(scrollPos);
       
     });
   });
