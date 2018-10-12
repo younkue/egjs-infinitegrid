@@ -445,7 +445,7 @@ describe("InfiniteGrid Test", function () {
       });
     });
   });
-  describe.only(`When scroll is attached to the Bottom`, function () {
+  describe(`When scroll is attached to the Bottom`, function () {
     beforeEach(() => {
       this.el = sandbox();
       this.el.innerHTML = `<div id='infinite'></div><div id="footer" style="position:relative;width: 100%; height: ${window.innerHeight * 3}px;"></div>`;
@@ -469,6 +469,8 @@ describe("InfiniteGrid Test", function () {
 
       // When
       window.scrollTo(0, scrollPos);
+
+      console.log(scroll(window), document.body.offsetHeight, window.innerHeight);
       document.documentElement.scrollTop = scrollPos;
 
       await waitInsert(this.inst, true, 10, 4);
