@@ -973,8 +973,6 @@ ig.on("imageError", e => {
 		const watcher = this._watcher;
 		const scrollPos = watcher.getScrollPos();
 
-		
-
 		// recycle after _fit beacause prepend and append are occured simultaneously by scroll.
 		if (!isLayout && useRecycle && !this._isLoading()) {
 			console.log("LAY", scrollPos);
