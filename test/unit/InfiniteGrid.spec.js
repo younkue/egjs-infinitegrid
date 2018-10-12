@@ -465,14 +465,15 @@ describe("InfiniteGrid Test", function () {
       // Given
       const scrollPos = document.body.offsetHeight - window.innerHeight;
 
-      console.log(scroll(window), document.body.offsetHeight, window.innerHeight);
+
 
       // When
       window.scrollTo(0, scrollPos);
 
-      console.log(scroll(window), document.body.offsetHeight, window.innerHeight);
+
       document.documentElement.scrollTop = scrollPos;
 
+      await wait(100);
       await waitInsert(this.inst, true, 10, 4);
 
       // Then
