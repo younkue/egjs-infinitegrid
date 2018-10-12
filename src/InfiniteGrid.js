@@ -975,13 +975,13 @@ ig.on("imageError", e => {
 
 		// recycle after _fit beacause prepend and append are occured simultaneously by scroll.
 		if (!isLayout && useRecycle && !this._isLoading()) {
-			console.log("LAY", scrollPos);
 			this._infinite.recycle(scrollPos, isAppend);
 		}
 
 		const size = this._getEdgeValue("end");
 
 		if (isAppend) {
+			console.log("LAY", scrollPos);
 			this._setContainerSize(size + this._status.loadingSize || 0);
 			this._scrollTo(scrollPos);
 		}
