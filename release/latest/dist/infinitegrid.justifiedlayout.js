@@ -968,8 +968,10 @@ NOTE: This is not an official distribution file and is only for user convenience
     }
 
     function setTransition(styles, transitionDuration, pos1, pos2) {
-      var cssText = transitionDuration ? TRANSITION + "-property:" + TRANSFORM + ",width,height;" + TRANSITION + "-duration:" + transitionDuration + "s;" + TRANSITION + "-delay:0s;" + (TRANSFORM + ":translate(" + (pos1.left - pos2.left) + "px," + (pos1.top - pos2.top) + "px);") : "";
-      styles.cssText = cssText;
+      styles[TRANSITION + "-property"] = transitionDuration ? TRANSFORM + ",width,height" : "";
+      styles[TRANSITION + "-duration"] = transitionDuration ? transitionDuration + "s" : "";
+      styles[TRANSITION + "-delay"] = transitionDuration ? "0s" : "";
+      styles[TRANSFORM] = transitionDuration ? "translate(" + (pos1.left - pos2.left) + "px," + (pos1.top - pos2.top) + "px)" : "";
     }
 
     var DOMRenderer =
@@ -1331,7 +1333,7 @@ NOTE: This is not an official distribution file and is only for user convenience
       };
 
       __proto.resize = function () {
-        this._containerOffset = this._getOffset();
+        this._containerOffset = this.options.isOverflowScroll ? 0 : this._getOffset();
       };
 
       __proto.detachEvent = function () {
